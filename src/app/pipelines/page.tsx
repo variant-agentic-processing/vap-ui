@@ -70,7 +70,7 @@ export default function PipelinesPage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-brand-border bg-brand-surface overflow-hidden">
+      <div className="rounded-xl border border-brand-border bg-brand-surface overflow-hidden max-h-[calc(100vh-220px)] overflow-y-auto">
         {error ? (
           <div className="p-8 text-center text-sm text-red-400">{error}</div>
         ) : isLoading ? (
