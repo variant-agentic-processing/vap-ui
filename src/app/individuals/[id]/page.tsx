@@ -33,8 +33,8 @@ const COLUMNS: { label: string; width: number }[] = [
   { label: "Significance", width: 160 },
   { label: "ClinVar ID",   width: 90  },
   { label: "Review Status",width: 160 },
-  { label: "Consequence",  width: 160 },
   { label: "Condition",    width: 200 },
+  { label: "Consequence",  width: 160 },
   { label: "HGVS c.",      width: 160 },
   { label: "HGVS p.",      width: 140 },
   { label: "rsID",         width: 100 },
@@ -186,8 +186,8 @@ function VariantRow({ variant: v }: { variant: Variant }) {
         ) : "—"}
       </td>
       <Cell value={reviewLabel || null}    className="text-brand-muted" />
-      <Cell value={consequenceLabel || null} className="text-brand-muted" />
       <Cell value={v.condition_name}       className="text-brand-muted" />
+      <Cell value={consequenceLabel || null} className="text-brand-muted" />
       <Cell value={v.hgvs_c}     className="text-brand-muted text-[11px]" mono />
       <Cell value={v.hgvs_p}     className="text-brand-muted text-[11px]" mono />
       <Cell value={v.rsid}        className="text-brand-muted" mono />
