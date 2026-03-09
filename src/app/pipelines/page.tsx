@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SubmitPipelineModal } from "@/components/SubmitPipelineModal";
 import { usePipelines } from "@/hooks/usePipelines";
@@ -24,9 +24,11 @@ export default function PipelinesPage() {
   const [statusFilter, setStatusFilter] = useState<PipelineStatus | undefined>();
   const [showModal, setShowModal] = useState(false);
 
-  const { pipelines, total, isLoading, error, submit, cancel } = usePipelines(
-    statusFilter ? { status: statusFilter, limit: 50 } : { limit: 50 },
+  const queryParams = useMemo(
+    () => (statusFilter ? { status: statusFilter, limit: 50 } : { limit: 50 }),
+    [statusFilter],
   );
+  const { pipelines, total, isLoading, error, submit, cancel } = usePipelines(queryParams);
 
   return (
     <div>
