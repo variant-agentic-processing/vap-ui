@@ -66,7 +66,7 @@ export default function IndividualPage({
           <span className="text-brand-gold">⚠</span>
           <p className="text-sm text-brand-gold">
             Showing {data.returned_count.toLocaleString()} of{" "}
-            {data.total_count.toLocaleString()} total variants — first 999 by chromosomal position.
+            {data.total_count.toLocaleString()} total variants — ranked by clinical significance, most pathogenic first.
           </p>
         </div>
       )}
