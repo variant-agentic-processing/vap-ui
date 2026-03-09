@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    background-color: #0d1b2a;
+    color: #e2f0fb;
+  }
+
+  /* Subtle cyan glow on focused inputs */
+  input:focus,
+  textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.35);
+  }
+
+  /* Scrollbar — dark themed */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0d1b2a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1a3a5c;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #00d4ff44;
+  }
+}
