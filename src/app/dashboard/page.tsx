@@ -3,12 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useDashboard } from "@/hooks/useDashboard";
-import { useIndividualSummary } from "@/hooks/useIndividualSummary";
 
 export default function DashboardPage() {
   const [geneInput, setGeneInput] = useState("");
   const [activeGenes, setActiveGenes] = useState<string[]>([]);
-  const [selectedIndividual, setSelectedIndividual] = useState<string | null>(null);
 
   const { cohortSummary, topGenes, consequences, individuals, loading, error } =
     useDashboard(activeGenes);
@@ -19,13 +17,11 @@ export default function DashboardPage() {
       .map((g) => g.trim().toUpperCase())
       .filter(Boolean);
     setActiveGenes(genes);
-    setSelectedIndividual(null);
   }
 
   function clearFilter() {
     setGeneInput("");
     setActiveGenes([]);
-    setSelectedIndividual(null);
   }
 
   const totalVariants = cohortSummary.reduce((s, r) => s + r.count, 0);
@@ -117,18 +113,15 @@ export default function DashboardPage() {
               </thead>
               <tbody className="divide-y divide-brand-border/40">
                 {individuals.map((ind) => (
-                  <tr
-                    key={ind.individual_id}
-                    onClick={() =>
-                      setSelectedIndividual(
-                        selectedIndividual === ind.individual_id ? null : ind.individual_id
-                      )
-                    }
-                    className={`cursor-pointer transition-colors hover:bg-brand-border/20 ${
-                      selectedIndividual === ind.individual_id ? "bg-brand-cyan/5" : ""
-                    }`}
-                  >
-                    <td className="py-2 text-brand-text font-mono">{ind.individual_id}</td>
+                  <tr key={ind.individual_id} className="transition-colors hover:bg-brand-border/20">
+                    <td className="py-2 font-mono">
+                      <Link
+                        href={`/individuals/${encodeURIComponent(ind.individual_id)}`}
+                        className="text-brand-cyan hover:underline"
+                      >
+                        {ind.individual_id}
+                      </Link>
+                    </td>
                     <td className="py-2 text-right text-brand-muted">{ind.variant_count.toLocaleString()}</td>
                     <td className="py-2 text-right text-brand-gold">{ind.pathogenic_count.toLocaleString()}</td>
                   </tr>
@@ -138,39 +131,31 @@ export default function DashboardPage() {
           )}
         </Section>
 
-        {/* Individual detail or top genes */}
-        {selectedIndividual ? (
-          <IndividualDetail id={selectedIndividual} onClose={() => setSelectedIndividual(null)} />
-        ) : (
-          <Section title="Top Genes by Pathogenic Burden">
-            {loading ? (
-              <LoadingRows />
-            ) : (
-              <div className="space-y-1.5">
-                {topGenes.slice(0, 12).map((g) => {
-                  const max = topGenes[0]?.pathogenic_count ?? 1;
-                  const pct = max > 0 ? (g.pathogenic_count / max) * 100 : 0;
-                  return (
-                    <div key={g.gene_symbol} className="flex items-center gap-3">
-                      <span className="w-24 shrink-0 font-mono text-xs text-brand-text truncate">
-                        {g.gene_symbol}
-                      </span>
-                      <div className="flex-1 h-1.5 rounded-full bg-brand-border overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-brand-gold"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <span className="w-8 text-right text-xs text-brand-muted shrink-0">
-                        {g.pathogenic_count}
-                      </span>
+        <Section title="Top Genes by Pathogenic Burden">
+          {loading ? (
+            <LoadingRows />
+          ) : (
+            <div className="space-y-1.5">
+              {topGenes.slice(0, 12).map((g) => {
+                const max = topGenes[0]?.pathogenic_count ?? 1;
+                const pct = max > 0 ? (g.pathogenic_count / max) * 100 : 0;
+                return (
+                  <div key={g.gene_symbol} className="flex items-center gap-3">
+                    <span className="w-24 shrink-0 font-mono text-xs text-brand-text truncate">
+                      {g.gene_symbol}
+                    </span>
+                    <div className="flex-1 h-1.5 rounded-full bg-brand-border overflow-hidden">
+                      <div className="h-full rounded-full bg-brand-gold" style={{ width: `${pct}%` }} />
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </Section>
-        )}
+                    <span className="w-8 text-right text-xs text-brand-muted shrink-0">
+                      {g.pathogenic_count}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Section>
       </div>
 
       {/* Clinical significance breakdown */}
@@ -282,52 +267,3 @@ function sigColor(sig: string) {
   return { border: "border-brand-border", bg: "bg-brand-navy", text: "text-brand-muted" };
 }
 
-function IndividualDetail({ id, onClose }: { id: string; onClose: () => void }) {
-  const { summary, loading, error } = useIndividualSummary(id);
-
-  return (
-    <Section title={id}>
-      <button
-        onClick={onClose}
-        className="float-right -mt-8 text-xs text-brand-muted hover:text-brand-text"
-      >
-        ✕ close
-      </button>
-      {loading && <LoadingRows />}
-      {error && <p className="text-sm text-red-400">{error}</p>}
-      {summary && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-lg border border-brand-border bg-brand-navy px-3 py-2">
-              <p className="text-xs text-brand-muted">Total Variants</p>
-              <p className="text-lg font-semibold text-brand-text">{summary.total_variants.toLocaleString()}</p>
-            </div>
-            <div className="rounded-lg border border-brand-border bg-brand-navy px-3 py-2">
-              <p className="text-xs text-brand-muted">Pathogenic</p>
-              <p className="text-lg font-semibold text-brand-gold">{summary.pathogenic_count.toLocaleString()}</p>
-            </div>
-          </div>
-          <div>
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-semibold text-brand-muted uppercase tracking-wide">Top Genes</p>
-              <Link href={`/individuals/${encodeURIComponent(id)}`} className="text-xs text-brand-cyan hover:underline">View all variants →</Link>
-            </div>
-            <div className="space-y-1">
-              {summary.top_genes.slice(0, 8).map((g) => (
-                <div key={g.gene_symbol} className="flex justify-between text-xs">
-                  <span className="font-mono text-brand-text">{g.gene_symbol}</span>
-                  <span className="text-brand-muted">
-                    {g.variant_count.toLocaleString()} variants
-                    {g.pathogenic_count > 0 && (
-                      <span className="ml-2 text-brand-gold">({g.pathogenic_count} path.)</span>
-                    )}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-    </Section>
-  );
-}
