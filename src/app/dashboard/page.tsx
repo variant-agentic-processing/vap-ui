@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useIndividualSummary } from "@/hooks/useIndividualSummary";
 
@@ -307,7 +308,10 @@ function IndividualDetail({ id, onClose }: { id: string; onClose: () => void }) 
             </div>
           </div>
           <div>
-            <p className="mb-2 text-xs font-semibold text-brand-muted uppercase tracking-wide">Top Genes</p>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-xs font-semibold text-brand-muted uppercase tracking-wide">Top Genes</p>
+              <Link href={`/individuals/${encodeURIComponent(id)}`} className="text-xs text-brand-cyan hover:underline">View all variants →</Link>
+            </div>
             <div className="space-y-1">
               {summary.top_genes.slice(0, 8).map((g) => (
                 <div key={g.gene_symbol} className="flex justify-between text-xs">
