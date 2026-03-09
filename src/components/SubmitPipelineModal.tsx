@@ -12,15 +12,13 @@ interface SubmitPipelineModalProps {
 export function SubmitPipelineModal({ onClose, onSubmit }: SubmitPipelineModalProps) {
   const [type, setType] = useState<PipelineType>("vcf_ingest");
   const [individualId, setIndividualId] = useState("");
-  const [s3VcfUri, setS3VcfUri] = useState("");
-  const [s3TbiUri, setS3TbiUri] = useState("");
+  const [forceNormalize, setForceNormalize] = useState(false);
+  const [forceLoad, setForceLoad] = useState(false);
   const [forceDownload, setForceDownload] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isValid =
-    type === "clinvar_refresh" ||
-    (individualId.trim() !== "" && s3VcfUri.trim() !== "");
+  const isValid = type === "clinvar_refresh" || individualId.trim() !== "";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -33,12 +31,16 @@ export function SubmitPipelineModal({ onClose, onSubmit }: SubmitPipelineModalPr
           ? {
               type: "vcf_ingest",
               individual_id: individualId.trim(),
-              s3_vcf_uri: s3VcfUri.trim(),
-              s3_tbi_uri: s3TbiUri.trim() || undefined,
+              config: {
+                ...(forceNormalize && { force_normalize: true }),
+                ...(forceLoad && { force_load: true }),
+              },
             }
           : {
               type: "clinvar_refresh",
-              config: forceDownload ? { force_download: true } : {},
+              config: {
+                ...(forceDownload && { force_download: true }),
+              },
             };
       await onSubmit(body);
       onClose();
@@ -83,38 +85,36 @@ export function SubmitPipelineModal({ onClose, onSubmit }: SubmitPipelineModalPr
                 required
               />
             </Field>
-            <Field label="S3 VCF URI" required>
-              <input
-                type="text"
-                value={s3VcfUri}
-                onChange={(e) => setS3VcfUri(e.target.value)}
-                placeholder="s3://bucket/HG002.vcf.gz"
-                className={inputClass}
-                required
+            <div className="rounded-lg border border-brand-border bg-brand-navy/50 p-4 space-y-3">
+              <p className="text-xs font-medium text-brand-muted">Overrides</p>
+              <CheckboxOption
+                checked={forceNormalize}
+                onChange={setForceNormalize}
+                label="Force normalize"
+                hint="Re-run bcftools normalization even if output already exists in GCS"
               />
-            </Field>
-            <Field label="S3 TBI URI" hint="optional">
-              <input
-                type="text"
-                value={s3TbiUri}
-                onChange={(e) => setS3TbiUri(e.target.value)}
-                placeholder="s3://bucket/HG002.vcf.gz.tbi"
-                className={inputClass}
+              <CheckboxOption
+                checked={forceLoad}
+                onChange={setForceLoad}
+                label="Force load"
+                hint="Re-load into ClickHouse even if a completed record already exists"
               />
-            </Field>
+            </div>
           </>
         ) : (
-          <div className="rounded-lg border border-brand-border bg-brand-navy/50 p-4 text-sm text-brand-muted">
-            <p>Downloads the latest ClinVar release from NCBI and reloads the annotations table.</p>
-            <label className="mt-4 flex items-center gap-2.5 cursor-pointer">
-              <input
-                type="checkbox"
+          <div className="rounded-lg border border-brand-border bg-brand-navy/50 p-4 space-y-3">
+            <p className="text-xs text-brand-muted">
+              Downloads the latest ClinVar release from NCBI and reloads the annotations table.
+            </p>
+            <div className="pt-1">
+              <p className="mb-3 text-xs font-medium text-brand-muted">Overrides</p>
+              <CheckboxOption
                 checked={forceDownload}
-                onChange={(e) => setForceDownload(e.target.checked)}
-                className="h-3.5 w-3.5 rounded border-brand-border accent-brand-cyan"
+                onChange={setForceDownload}
+                label="Force download"
+                hint="Re-download from NCBI even if a cached copy exists in GCS"
               />
-              <span className="text-brand-text">Force download (bypass cache)</span>
-            </label>
+            </div>
           </div>
         )}
 
@@ -132,6 +132,33 @@ export function SubmitPipelineModal({ onClose, onSubmit }: SubmitPipelineModalPr
         </div>
       </form>
     </Modal>
+  );
+}
+
+function CheckboxOption({
+  checked,
+  onChange,
+  label,
+  hint,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+  hint: string;
+}) {
+  return (
+    <label className="flex cursor-pointer items-start gap-2.5">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border-brand-border accent-brand-cyan"
+      />
+      <div>
+        <span className="text-xs font-medium text-brand-text">{label}</span>
+        <p className="text-xs text-brand-muted">{hint}</p>
+      </div>
+    </label>
   );
 }
 
