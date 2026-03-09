@@ -31,13 +31,13 @@ const COLUMNS: { label: string; width: number }[] = [
   { label: "Filter",       width: 64  },
   { label: "Gene",         width: 80  },
   { label: "Significance", width: 160 },
+  { label: "ClinVar ID",   width: 90  },
   { label: "Review Status",width: 160 },
   { label: "Consequence",  width: 160 },
   { label: "Condition",    width: 200 },
   { label: "HGVS c.",      width: 160 },
   { label: "HGVS p.",      width: 140 },
   { label: "rsID",         width: 100 },
-  { label: "ClinVar ID",   width: 90  },
   { label: "Last Eval.",   width: 90  },
   { label: "AF",           width: 72  },
 ];
@@ -169,12 +169,6 @@ function VariantRow({ variant: v }: { variant: Variant }) {
       <Cell value={v.filter}      className="text-brand-muted" />
       <Cell value={v.gene_symbol} className="text-brand-text" mono />
       <Cell value={sigLabel || null}       className={sigClass} />
-      <Cell value={reviewLabel || null}    className="text-brand-muted" />
-      <Cell value={consequenceLabel || null} className="text-brand-muted" />
-      <Cell value={v.condition_name}       className="text-brand-muted" />
-      <Cell value={v.hgvs_c}     className="text-brand-muted text-[11px]" mono />
-      <Cell value={v.hgvs_p}     className="text-brand-muted text-[11px]" mono />
-      <Cell value={v.rsid}        className="text-brand-muted" mono />
       <td
         className="px-3 py-1.5 text-brand-muted font-mono overflow-hidden"
         style={{ whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}
@@ -191,6 +185,12 @@ function VariantRow({ variant: v }: { variant: Variant }) {
           </a>
         ) : "—"}
       </td>
+      <Cell value={reviewLabel || null}    className="text-brand-muted" />
+      <Cell value={consequenceLabel || null} className="text-brand-muted" />
+      <Cell value={v.condition_name}       className="text-brand-muted" />
+      <Cell value={v.hgvs_c}     className="text-brand-muted text-[11px]" mono />
+      <Cell value={v.hgvs_p}     className="text-brand-muted text-[11px]" mono />
+      <Cell value={v.rsid}        className="text-brand-muted" mono />
       <Cell value={v.clinvar_last_evaluated || null} className="text-brand-muted" />
       <Cell value={v.allele_frequency > 0 ? v.allele_frequency.toExponential(2) : null} className="text-right text-brand-muted" />
     </tr>
