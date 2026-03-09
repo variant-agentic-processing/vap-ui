@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "vap-ui-deploy"
+version = "0.1.0"
+description = "Deploy tooling for vap-ui (Pulumi + Cloud Build)"
+authors = ["variant-agentic-processing"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+poethepoet = ">=0.25.0"
+pulumi = ">=3.0.0"
+pulumi-gcp = ">=7.0.0"
+
+[tool.poe]
+envfile = ".env"
+
+[tool.poe.tasks]
+build      = "bash scripts/build_image.sh"
+deploy     = { shell = "cd deploy && pulumi up --yes" }
+stack-init = { shell = "cd deploy && pulumi stack init dev" }
+login      = { script = "scripts.login:main" }
+logs       = { shell = "gcloud run services logs read vap-ui --region=us-central1 --project=${GCP_PROJECT} --limit=50" }
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
