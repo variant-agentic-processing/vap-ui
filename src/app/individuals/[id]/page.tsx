@@ -90,7 +90,10 @@ export default function IndividualPage({
       )}
 
       {data && (
-        <div className="overflow-x-auto rounded-xl border border-brand-border">
+        <div
+          className="overflow-auto rounded-xl border border-brand-border"
+          style={{ maxHeight: "580px" }}
+        >
           <table
             className="border-collapse text-xs"
             style={{ tableLayout: "fixed", width: `${COLUMNS.reduce((s, c) => s + c.width, 0)}px` }}
@@ -100,7 +103,7 @@ export default function IndividualPage({
                 <col key={col.label} style={{ width: col.width }} />
               ))}
             </colgroup>
-            <thead className="bg-brand-navy sticky top-0 z-10">
+            <thead className="sticky top-0 z-10 bg-brand-navy">
               <tr>
                 {COLUMNS.map((col) => (
                   <th
