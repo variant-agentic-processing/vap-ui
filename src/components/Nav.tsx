@@ -5,9 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
-  { href: "/pipelines", label: "Pipelines" },
-  { href: "/query", label: "Query" },
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/query", label: "Query" },
+  { href: "/pipelines", label: "Pipelines" },
 ] as const;
 
 export function Nav() {
@@ -18,7 +18,7 @@ export function Nav() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="flex h-16 items-center gap-8">
           {/* Logo + wordmark */}
-          <Link href="/pipelines" className="flex items-center gap-2.5 shrink-0">
+          <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0">
             <Image
               src="/logo.jpeg"
               alt="Genomic Variant Platform"
