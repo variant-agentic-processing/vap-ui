@@ -133,6 +133,34 @@ function ThinkingDots() {
   );
 }
 
+const markdownComponents: React.ComponentProps<typeof Markdown>["components"] = {
+  // Tables — horizontally scrollable, compact, styled to brand palette
+  table: ({ children }) => (
+    <div className="my-4 overflow-x-auto rounded-lg border border-brand-border">
+      <table className="w-full border-collapse text-xs">{children}</table>
+    </div>
+  ),
+  thead: ({ children }) => (
+    <thead className="bg-brand-navy">{children}</thead>
+  ),
+  tbody: ({ children }) => (
+    <tbody className="divide-y divide-brand-border/50">{children}</tbody>
+  ),
+  tr: ({ children }) => (
+    <tr className="transition-colors even:bg-brand-border/10 hover:bg-brand-border/20">
+      {children}
+    </tr>
+  ),
+  th: ({ children }) => (
+    <th className="whitespace-nowrap border-b border-brand-border px-3 py-2 text-left text-xs font-semibold text-brand-cyan">
+      {children}
+    </th>
+  ),
+  td: ({ children }) => (
+    <td className="px-3 py-2 text-xs text-brand-text">{children}</td>
+  ),
+};
+
 function AnswerBlock({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
 
@@ -161,10 +189,8 @@ function AnswerBlock({ text }: { text: string }) {
         prose-li:text-brand-text
         prose-a:text-brand-cyan
         prose-blockquote:border-brand-cyan prose-blockquote:text-brand-muted
-        prose-hr:border-brand-border
-        prose-th:text-brand-text prose-td:text-brand-muted
-        prose-table:border-brand-border">
-        <Markdown>{text}</Markdown>
+        prose-hr:border-brand-border">
+        <Markdown components={markdownComponents}>{text}</Markdown>
       </div>
     </div>
   );
