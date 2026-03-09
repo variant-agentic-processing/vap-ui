@@ -92,7 +92,7 @@ export default function IndividualPage({
       {data && (
         <div
           className="overflow-auto rounded-xl border border-brand-border"
-          style={{ maxHeight: "580px" }}
+          style={{ maxHeight: "560px" }}
         >
           <table
             className="border-collapse text-xs"
