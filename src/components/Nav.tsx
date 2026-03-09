@@ -16,18 +16,18 @@ export function Nav() {
   return (
     <nav className="border-b border-brand-border bg-brand-surface">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="flex h-14 items-center gap-8">
+        <div className="flex h-16 items-center gap-8">
           {/* Logo + wordmark */}
           <Link href="/pipelines" className="flex items-center gap-2.5 shrink-0">
             <Image
               src="/logo.jpeg"
               alt="Genomic Variant Platform"
-              width={28}
-              height={28}
-              className="rounded-md"
+              width={36}
+              height={36}
+              className="rounded-lg"
               priority
             />
-            <span className="text-sm font-semibold tracking-tight text-brand-text">
+            <span className="text-base font-bold tracking-tight text-brand-text">
               Variant Platform
             </span>
           </Link>

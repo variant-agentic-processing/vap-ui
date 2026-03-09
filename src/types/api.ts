@@ -52,6 +52,7 @@ export interface PipelineCreate {
   type: PipelineType;
   individual_id?: string;
   name?: string;
+  config?: Record<string, unknown>;
   tags?: string[];
   notes?: string;
   s3_vcf_uri?: string;
