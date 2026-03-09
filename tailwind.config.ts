@@ -14,7 +14,7 @@ const config: Config = {
           "cyan-dim": "#0ea5c9", // slightly muted cyan for hover states
           gold:    "#f59e0b", // secondary accent (circuit nodes)
           text:    "#e2f0fb", // primary text on dark
-          muted:   "#6b9ab8", // secondary / muted text
+          muted:   "#93bdd4", // secondary / muted text
         },
         // Pipeline status badges
         status: {
