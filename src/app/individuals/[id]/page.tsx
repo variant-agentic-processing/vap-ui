@@ -18,6 +18,30 @@ function sigColor(sig: string) {
   return SIG_COLORS[sig] ?? "text-brand-muted";
 }
 
+// Column definitions: label and default width in px
+const COLUMNS: { label: string; width: number }[] = [
+  { label: "Chr",          width: 64  },
+  { label: "Position",     width: 90  },
+  { label: "Ref",          width: 52  },
+  { label: "Alt",          width: 52  },
+  { label: "Genotype",     width: 72  },
+  { label: "Depth",        width: 58  },
+  { label: "Quality",      width: 64  },
+  { label: "GQ",           width: 52  },
+  { label: "Filter",       width: 64  },
+  { label: "Gene",         width: 80  },
+  { label: "Significance", width: 160 },
+  { label: "Review Status",width: 160 },
+  { label: "Consequence",  width: 160 },
+  { label: "Condition",    width: 200 },
+  { label: "HGVS c.",      width: 160 },
+  { label: "HGVS p.",      width: 140 },
+  { label: "rsID",         width: 100 },
+  { label: "ClinVar ID",   width: 90  },
+  { label: "Last Eval.",   width: 90  },
+  { label: "AF",           width: 72  },
+];
+
 export default function IndividualPage({
   params,
 }: {
@@ -30,10 +54,7 @@ export default function IndividualPage({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link
-          href="/dashboard"
-          className="text-xs text-brand-muted hover:text-brand-text transition-colors"
-        >
+        <Link href="/dashboard" className="text-xs text-brand-muted hover:text-brand-text transition-colors">
           ← Dashboard
         </Link>
         <h1 className="text-2xl font-semibold text-brand-text font-mono">{id}</h1>
@@ -51,19 +72,15 @@ export default function IndividualPage({
       )}
 
       {!data?.truncated && data && (
-        <p className="text-xs text-brand-muted">
-          {data.returned_count.toLocaleString()} variants total.
-        </p>
+        <p className="text-xs text-brand-muted">{data.returned_count.toLocaleString()} variants total.</p>
       )}
 
-      {/* Error */}
       {error && (
         <div className="rounded-xl border border-red-800/40 bg-red-900/10 px-4 py-3 text-sm text-red-400">
           {error}
         </div>
       )}
 
-      {/* Loading skeleton */}
       {loading && (
         <div className="space-y-2">
           {Array.from({ length: 12 }).map((_, i) => (
@@ -72,22 +89,27 @@ export default function IndividualPage({
         </div>
       )}
 
-      {/* Variants table */}
       {data && (
         <div className="overflow-x-auto rounded-xl border border-brand-border">
-          <table className="min-w-full border-collapse text-xs">
-            <thead className="bg-brand-navy sticky top-0">
+          <table
+            className="border-collapse text-xs"
+            style={{ tableLayout: "fixed", width: `${COLUMNS.reduce((s, c) => s + c.width, 0)}px` }}
+          >
+            <colgroup>
+              {COLUMNS.map((col) => (
+                <col key={col.label} style={{ width: col.width }} />
+              ))}
+            </colgroup>
+            <thead className="bg-brand-navy sticky top-0 z-10">
               <tr>
-                {[
-                  "Chr", "Position", "Ref", "Alt", "Genotype", "Depth",
-                  "Quality", "Filter", "Gene", "Significance", "Consequence",
-                  "Condition", "HGVS c.", "HGVS p.", "rsID", "AF",
-                ].map((h) => (
+                {COLUMNS.map((col) => (
                   <th
-                    key={h}
-                    className="whitespace-nowrap border-b border-brand-border px-3 py-2 text-left font-semibold text-brand-cyan"
+                    key={col.label}
+                    title={col.label}
+                    className="border-b border-brand-border px-3 py-2 text-left font-semibold text-brand-cyan overflow-hidden"
+                    style={{ resize: "horizontal", overflow: "hidden", whiteSpace: "nowrap" }}
                   >
-                    {h}
+                    {col.label}
                   </th>
                 ))}
               </tr>
@@ -104,35 +126,70 @@ export default function IndividualPage({
   );
 }
 
+function Cell({
+  value,
+  className = "text-brand-muted",
+  mono = false,
+}: {
+  value: string | number | null | undefined;
+  className?: string;
+  mono?: boolean;
+}) {
+  const display = value != null && value !== "" ? String(value) : "—";
+  return (
+    <td
+      title={display !== "—" ? display : undefined}
+      className={`px-3 py-1.5 overflow-hidden ${className} ${mono ? "font-mono" : ""}`}
+      style={{ whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}
+    >
+      {display}
+    </td>
+  );
+}
+
 function VariantRow({ variant: v }: { variant: Variant }) {
+  const sigClass = sigColor(v.clinical_significance);
+  const reviewLabel = v.review_status.replace(/_/g, " ").replace(/,/g, ", ");
+  const consequenceLabel = v.consequence.replace(/_variant$/, "").replace(/_/g, " ");
+  const sigLabel = v.clinical_significance.replace(/_/g, " ");
+
   return (
     <tr className="transition-colors even:bg-brand-border/10 hover:bg-brand-border/20">
-      <td className="px-3 py-1.5 font-mono text-brand-muted">{v.chromosome}</td>
-      <td className="px-3 py-1.5 font-mono text-brand-text">{v.position.toLocaleString()}</td>
-      <td className="px-3 py-1.5 font-mono text-brand-text">{v.ref}</td>
-      <td className="px-3 py-1.5 font-mono text-brand-text">{v.alt}</td>
-      <td className="px-3 py-1.5 font-mono text-brand-muted">{v.genotype}</td>
-      <td className="px-3 py-1.5 text-right text-brand-muted">{v.depth ?? "—"}</td>
-      <td className="px-3 py-1.5 text-right text-brand-muted">
-        {v.quality != null ? v.quality.toFixed(0) : "—"}
+      <Cell value={v.chromosome}  className="text-brand-muted" mono />
+      <Cell value={v.position.toLocaleString()} className="text-brand-text" mono />
+      <Cell value={v.ref}         className="text-brand-text" mono />
+      <Cell value={v.alt}         className="text-brand-text" mono />
+      <Cell value={v.genotype}    className="text-brand-muted" mono />
+      <Cell value={v.depth}       className="text-right text-brand-muted" />
+      <Cell value={v.quality != null ? v.quality.toFixed(0) : null} className="text-right text-brand-muted" />
+      <Cell value={v.genotype_quality != null ? v.genotype_quality.toFixed(0) : null} className="text-right text-brand-muted" />
+      <Cell value={v.filter}      className="text-brand-muted" />
+      <Cell value={v.gene_symbol} className="text-brand-text" mono />
+      <Cell value={sigLabel || null}       className={sigClass} />
+      <Cell value={reviewLabel || null}    className="text-brand-muted" />
+      <Cell value={consequenceLabel || null} className="text-brand-muted" />
+      <Cell value={v.condition_name}       className="text-brand-muted" />
+      <Cell value={v.hgvs_c}     className="text-brand-muted text-[11px]" mono />
+      <Cell value={v.hgvs_p}     className="text-brand-muted text-[11px]" mono />
+      <Cell value={v.rsid}        className="text-brand-muted" mono />
+      <td
+        className="px-3 py-1.5 text-brand-muted font-mono overflow-hidden"
+        style={{ whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}
+      >
+        {v.clinvar_variation_id ? (
+          <a
+            href={`https://www.ncbi.nlm.nih.gov/clinvar/variation/${v.clinvar_variation_id}/`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-brand-cyan hover:underline"
+            title={`ClinVar variation ${v.clinvar_variation_id}`}
+          >
+            {v.clinvar_variation_id}
+          </a>
+        ) : "—"}
       </td>
-      <td className="px-3 py-1.5 text-brand-muted">{v.filter || "—"}</td>
-      <td className="px-3 py-1.5 font-mono text-brand-text">{v.gene_symbol || "—"}</td>
-      <td className={`px-3 py-1.5 whitespace-nowrap ${sigColor(v.clinical_significance)}`}>
-        {v.clinical_significance.replace(/_/g, " ") || "—"}
-      </td>
-      <td className="px-3 py-1.5 text-brand-muted max-w-[180px] truncate">
-        {v.consequence.replace(/_variant$/, "").replace(/_/g, " ") || "—"}
-      </td>
-      <td className="px-3 py-1.5 text-brand-muted max-w-[200px] truncate">
-        {v.condition_name || "—"}
-      </td>
-      <td className="px-3 py-1.5 font-mono text-brand-muted text-[11px]">{v.hgvs_c || "—"}</td>
-      <td className="px-3 py-1.5 font-mono text-brand-muted text-[11px]">{v.hgvs_p || "—"}</td>
-      <td className="px-3 py-1.5 font-mono text-brand-muted">{v.rsid || "—"}</td>
-      <td className="px-3 py-1.5 text-right text-brand-muted">
-        {v.allele_frequency > 0 ? v.allele_frequency.toExponential(2) : "—"}
-      </td>
+      <Cell value={v.clinvar_last_evaluated || null} className="text-brand-muted" />
+      <Cell value={v.allele_frequency > 0 ? v.allele_frequency.toExponential(2) : null} className="text-right text-brand-muted" />
     </tr>
   );
 }
