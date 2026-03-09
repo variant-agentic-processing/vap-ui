@@ -4,6 +4,7 @@ import { useState } from "react";
 import Markdown from "react-markdown";
 import { ToolCallStep } from "./ToolCallStep";
 import type { QueryStep } from "@/hooks/useAgentQuery";
+import type { StreamStatus } from "@/hooks/useStreamTimer";
 
 export interface QueryEntry {
   id: string;
@@ -12,6 +13,8 @@ export interface QueryEntry {
   answer: string | null;
   error: string | null;
   isStreaming?: boolean;
+  streamStatus?: StreamStatus;
+  elapsed?: number;
 }
 
 export function QueryResult({ entry }: { entry: QueryEntry }) {
@@ -52,12 +55,13 @@ export function QueryResult({ entry }: { entry: QueryEntry }) {
         </div>
       )}
 
-      {/* Streaming indicator — no steps yet */}
-      {entry.isStreaming && !hasSteps && (
-        <div className="flex items-center gap-2 px-1 text-xs text-brand-muted">
-          <span className="h-1.5 w-1.5 rounded-full bg-brand-cyan animate-pulse" />
-          Thinking…
-        </div>
+      {/* Streaming indicator */}
+      {entry.isStreaming && (
+        <StreamingStatus
+          status={entry.streamStatus ?? "thinking"}
+          elapsed={entry.elapsed ?? 0}
+          hasSteps={hasSteps}
+        />
       )}
 
       {/* Answer */}
@@ -72,6 +76,60 @@ export function QueryResult({ entry }: { entry: QueryEntry }) {
         </div>
       )}
     </div>
+  );
+}
+
+function StreamingStatus({
+  status,
+  elapsed,
+  hasSteps,
+}: {
+  status: StreamStatus;
+  elapsed: number;
+  hasSteps: boolean;
+}) {
+  if (status === "stalled") {
+    return (
+      <div className="rounded-xl border border-brand-gold/30 bg-brand-gold/10 px-4 py-3 space-y-1">
+        <div className="flex items-center gap-2 text-sm font-medium text-brand-gold">
+          <span>⚠</span>
+          No response for {elapsed}s — the agent may have lost context
+        </div>
+        <p className="text-xs text-brand-muted">
+          Try stopping and rephrasing with a simpler or more specific question.
+        </p>
+      </div>
+    );
+  }
+
+  if (status === "slow") {
+    return (
+      <div className="flex items-center gap-3 px-1 text-xs text-brand-muted">
+        <ThinkingDots />
+        <span>Still working… ({elapsed}s)</span>
+      </div>
+    );
+  }
+
+  if (!hasSteps) {
+    return (
+      <div className="flex items-center gap-3 px-1 text-xs text-brand-muted">
+        <ThinkingDots />
+        <span>Thinking…</span>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+function ThinkingDots() {
+  return (
+    <span className="flex items-center gap-[3px]">
+      <span className="thinking-dot h-1.5 w-1.5 rounded-full bg-brand-cyan" />
+      <span className="thinking-dot h-1.5 w-1.5 rounded-full bg-brand-cyan" />
+      <span className="thinking-dot h-1.5 w-1.5 rounded-full bg-brand-cyan" />
+    </span>
   );
 }
 

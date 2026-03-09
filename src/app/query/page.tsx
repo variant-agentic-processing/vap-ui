@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { QueryInput } from "@/components/QueryInput";
 import { QueryResult, type QueryEntry } from "@/components/QueryResult";
 import { useAgentQuery } from "@/hooks/useAgentQuery";
+import { useStreamTimer } from "@/hooks/useStreamTimer";
 
 export default function QueryPage() {
   const [input, setInput]     = useState("");
@@ -12,6 +13,7 @@ export default function QueryPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const { isStreaming, steps, answer, error, ask, cancel } = useAgentQuery();
+  const { status: streamStatus, elapsed } = useStreamTimer(isStreaming, steps.length);
 
   // Auto-scroll to bottom when new content arrives
   useEffect(() => {
@@ -45,7 +47,7 @@ export default function QueryPage() {
   }
 
   const activeEntry: QueryEntry | null = activeQuestion
-    ? { id: "active", question: activeQuestion, steps, answer, error, isStreaming }
+    ? { id: "active", question: activeQuestion, steps, answer, error, isStreaming, streamStatus, elapsed }
     : null;
 
   const isEmpty = history.length === 0 && !activeEntry;
