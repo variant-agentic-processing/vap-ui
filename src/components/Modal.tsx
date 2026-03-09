@@ -28,7 +28,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
         if (e.target === overlayRef.current) onClose();
       }}
     >
-      <div className="w-full max-w-md rounded-xl border border-brand-border bg-brand-surface shadow-2xl shadow-black/50">
+      <div className="w-full max-w-lg rounded-xl border border-brand-border bg-brand-surface shadow-2xl shadow-black/50">
         <div className="flex items-center justify-between border-b border-brand-border px-6 py-4">
           <h2 className="text-sm font-semibold text-brand-text">{title}</h2>
           <button

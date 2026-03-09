@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
+import { PipelineDetailModal } from "@/components/PipelineDetailModal";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SubmitPipelineModal } from "@/components/SubmitPipelineModal";
 import { usePipelines } from "@/hooks/usePipelines";
@@ -23,6 +23,7 @@ const STATUS_FILTERS: Array<{ label: string; value: PipelineStatus | undefined }
 export default function PipelinesPage() {
   const [statusFilter, setStatusFilter] = useState<PipelineStatus | undefined>();
   const [showModal, setShowModal] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const queryParams = useMemo(
     () => (statusFilter ? { status: statusFilter, limit: 50 } : { limit: 50 }),
@@ -99,7 +100,12 @@ export default function PipelinesPage() {
             </thead>
             <tbody className="divide-y divide-brand-border/50">
               {pipelines.map((p) => (
-                <PipelineRow key={p.id} pipeline={p} onCancel={() => void cancel(p.id)} />
+                <PipelineRow
+                  key={p.id}
+                  pipeline={p}
+                  onView={() => setSelectedId(p.id)}
+                  onCancel={() => void cancel(p.id)}
+                />
               ))}
             </tbody>
           </table>
@@ -111,6 +117,9 @@ export default function PipelinesPage() {
           onClose={() => setShowModal(false)}
           onSubmit={async (body) => { await submit(body); }}
         />
+      )}
+      {selectedId && (
+        <PipelineDetailModal id={selectedId} onClose={() => setSelectedId(null)} />
       )}
     </div>
   );
@@ -124,9 +133,11 @@ function Th({ children }: { children: React.ReactNode }) {
 
 function PipelineRow({
   pipeline: p,
+  onView,
   onCancel,
 }: {
   pipeline: Pipeline;
+  onView: () => void;
   onCancel: () => void;
 }) {
   const isActive = p.status === "running" || p.status === "pending";
@@ -154,12 +165,12 @@ function PipelineRow({
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
-          <Link
-            href={`/pipelines/${p.id}`}
+          <button
+            onClick={onView}
             className="text-xs text-brand-cyan hover:underline"
           >
             View
-          </Link>
+          </button>
           {isActive && (
             <button
               onClick={onCancel}
