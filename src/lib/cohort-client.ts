@@ -75,6 +75,8 @@ export interface Variant {
   rsid: string;
   review_status: string;
   allele_frequency: number;
+  clinvar_variation_id: number | null;
+  clinvar_last_evaluated: string | null;
 }
 
 export interface IndividualVariants {
