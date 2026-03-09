@@ -54,9 +54,9 @@ export function useStreamTimer(
 
   let status: StreamStatus = "idle";
   if (isStreaming) {
-    if (lastActivity >= 45)     status = "stalled";
-    else if (lastActivity >= 20) status = "slow";
-    else if (elapsed >= 10)     status = "working";
+    if (lastActivity >= 120)    status = "stalled";
+    else if (lastActivity >= 45) status = "slow";
+    else if (elapsed >= 15)     status = "working";
     else                        status = "thinking";
   }
 
