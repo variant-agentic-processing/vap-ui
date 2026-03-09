@@ -136,8 +136,8 @@ function ThinkingDots() {
 const markdownComponents: React.ComponentProps<typeof Markdown>["components"] = {
   // Tables — horizontally scrollable, compact, styled to brand palette
   table: ({ children }) => (
-    <div className="my-4 overflow-x-auto rounded-lg border border-brand-border">
-      <table className="w-full border-collapse text-xs">{children}</table>
+    <div className="not-prose my-4 overflow-x-auto rounded-lg border border-brand-border">
+      <table className="min-w-full border-collapse text-xs">{children}</table>
     </div>
   ),
   thead: ({ children }) => (
