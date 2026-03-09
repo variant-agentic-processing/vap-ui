@@ -1,12 +1,21 @@
 export default function QueryPage() {
   return (
     <div>
-      <h1 className="text-xl font-semibold text-gray-900">Query</h1>
-      <p className="mt-1 text-sm text-gray-500">
-        Ask natural-language questions about the variant dataset.
-      </p>
-      <div className="mt-8 rounded-lg border border-dashed border-gray-300 p-12 text-center">
-        <p className="text-sm text-gray-400">Phase 3 — coming soon</p>
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-brand-text">Query</h1>
+        <p className="mt-1 text-sm text-brand-muted">
+          Ask natural-language questions about the variant dataset.
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-dashed border-brand-border p-16 text-center">
+        <div className="mx-auto mb-3 h-8 w-8 rounded-lg bg-brand-surface ring-1 ring-brand-border flex items-center justify-center">
+          <span className="text-brand-cyan text-sm">◎</span>
+        </div>
+        <p className="text-sm font-medium text-brand-muted">Phase 3 — coming soon</p>
+        <p className="mt-1 text-xs text-brand-border">
+          Streaming agent queries with tool call visualization
+        </p>
       </div>
     </div>
   );

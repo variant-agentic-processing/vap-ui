@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -13,12 +14,25 @@ export function Nav() {
   const pathname = usePathname();
 
   return (
-    <nav className="border-b border-gray-200 bg-white">
+    <nav className="border-b border-brand-border bg-brand-surface">
       <div className="mx-auto max-w-7xl px-6">
         <div className="flex h-14 items-center gap-8">
-          <span className="text-sm font-semibold tracking-tight text-gray-900">
-            Genomic Variant Platform
-          </span>
+          {/* Logo + wordmark */}
+          <Link href="/pipelines" className="flex items-center gap-2.5 shrink-0">
+            <Image
+              src="/logo.jpeg"
+              alt="Genomic Variant Platform"
+              width={28}
+              height={28}
+              className="rounded-md"
+              priority
+            />
+            <span className="text-sm font-semibold tracking-tight text-brand-text">
+              Variant Platform
+            </span>
+          </Link>
+
+          {/* Nav links */}
           <div className="flex items-center gap-1">
             {NAV_LINKS.map(({ href, label }) => {
               const isActive =
@@ -30,8 +44,8 @@ export function Nav() {
                   className={[
                     "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-gray-100 text-gray-900"
-                      : "text-gray-500 hover:bg-gray-50 hover:text-gray-900",
+                      ? "bg-brand-border text-brand-cyan shadow-cyan-sm"
+                      : "text-brand-muted hover:bg-brand-border hover:text-brand-text",
                   ].join(" ")}
                 >
                   {label}

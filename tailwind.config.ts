@@ -5,15 +5,30 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Status colours — consistent with ask.py terminal palette
-        status: {
-          pending: "#6b7280",   // gray-500
-          running: "#3b82f6",   // blue-500
-          completed: "#22c55e", // green-500
-          failed: "#ef4444",    // red-500
-          cancelled: "#f59e0b", // amber-500
-          deleted: "#6b7280",   // gray-500
+        // Brand palette — pulled from logo
+        brand: {
+          navy:    "#0d1b2a", // darkest background
+          surface: "#0f2338", // card / nav surfaces
+          border:  "#1a3a5c", // subtle borders
+          cyan:    "#00d4ff", // primary accent (DNA helix / circuit lines)
+          "cyan-dim": "#0ea5c9", // slightly muted cyan for hover states
+          gold:    "#f59e0b", // secondary accent (circuit nodes)
+          text:    "#e2f0fb", // primary text on dark
+          muted:   "#6b9ab8", // secondary / muted text
         },
+        // Pipeline status badges
+        status: {
+          pending:   "#6b9ab8",
+          running:   "#00d4ff",
+          completed: "#22c55e",
+          failed:    "#ef4444",
+          cancelled: "#f59e0b",
+          deleted:   "#4b5563",
+        },
+      },
+      boxShadow: {
+        cyan: "0 0 12px 0 rgba(0, 212, 255, 0.25)",
+        "cyan-sm": "0 0 6px 0 rgba(0, 212, 255, 0.15)",
       },
     },
   },
