@@ -202,9 +202,11 @@ function SampleRow({
   onIngestSuccess: () => void;
 }) {
   const [ingestState, setIngestState] = useState<"idle" | "loading" | "queued" | "error">("idle");
+  const [ingestError, setIngestError] = useState<string | null>(null);
 
   async function handleIngest() {
     setIngestState("loading");
+    setIngestError(null);
     try {
       await createPipeline({
         type: "vcf_ingest",
@@ -214,7 +216,8 @@ function SampleRow({
       });
       setIngestState("queued");
       onIngestSuccess();
-    } catch {
+    } catch (e) {
+      setIngestError(e instanceof Error ? e.message : "Failed");
       setIngestState("error");
     }
   }
@@ -266,7 +269,7 @@ function SampleRow({
         {s.ingested ? null : ingestState === "queued" ? (
           <span className="text-xs text-brand-gold">Queued</span>
         ) : ingestState === "error" ? (
-          <span className="text-xs text-red-400">Failed</span>
+          <span className="text-xs text-red-400" title={ingestError ?? undefined}>Failed</span>
         ) : (
           <button
             onClick={() => void handleIngest()}
