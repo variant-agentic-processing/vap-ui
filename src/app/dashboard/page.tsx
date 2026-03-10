@@ -112,7 +112,7 @@ export default function DashboardPage() {
                   <tr className="border-b border-brand-border">
                     <th className="pb-2 text-left font-semibold text-brand-cyan">ID</th>
                     <th className="pb-2 text-right font-semibold text-brand-cyan">Variants</th>
-                    <th className="pb-2 text-right font-semibold text-brand-cyan">Pathogenic</th>
+                    <th className="pb-2 text-center font-semibold text-brand-cyan">Pathogenic</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-brand-border/40">
@@ -127,7 +127,7 @@ export default function DashboardPage() {
                         </Link>
                       </td>
                       <td className="py-2 text-right text-brand-muted">{ind.variant_count.toLocaleString()}</td>
-                      <td className="py-2 text-right text-brand-gold">{ind.pathogenic_count.toLocaleString()}</td>
+                      <td className="py-2 text-center text-brand-gold">{ind.pathogenic_count.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
