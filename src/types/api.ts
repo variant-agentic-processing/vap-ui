@@ -90,6 +90,11 @@ export interface DashboardStats {
 
 // ─── Agent Service ───────────────────────────────────────────────────────────
 
+export interface Message {
+  role: "user" | "assistant";
+  content: string;
+}
+
 export interface AgentHealth {
   status: string;
   tools: number;

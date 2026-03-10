@@ -1,72 +1,38 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { QueryInput } from "@/components/QueryInput";
-import { QueryResult, type QueryEntry } from "@/components/QueryResult";
+import { ConversationThread } from "@/components/ConversationThread";
 import { useAgentQuery } from "@/hooks/useAgentQuery";
 import { useStreamTimer } from "@/hooks/useStreamTimer";
 
 export default function QueryPage() {
-  const [input, setInput]     = useState("");
-  const [history, setHistory] = useState<QueryEntry[]>([]);
-  const [activeQuestion, setActiveQuestion] = useState<string>("");
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  const { isStreaming, steps, answer, error, ask, cancel } = useAgentQuery();
-  const { status: streamStatus, elapsed } = useStreamTimer(isStreaming, steps.length);
-
-  // Auto-scroll to bottom when new content arrives
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [steps.length, answer, isStreaming]);
-
-  // When streaming ends with a result, commit to history
-  useEffect(() => {
-    if (isStreaming || !activeQuestion) return;
-    if (answer === null && error === null) return;
-
-    setHistory((h) => [
-      ...h,
-      {
-        id: Date.now().toString(),
-        question: activeQuestion,
-        steps,
-        answer,
-        error,
-      },
-    ]);
-    setActiveQuestion("");
-  }, [isStreaming]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [input, setInput] = useState("");
+  const { isStreaming, turns, activeTurn, ask, cancel } = useAgentQuery();
+  const { status: streamStatus, elapsed } = useStreamTimer(isStreaming, activeTurn?.steps.length ?? 0);
 
   function handleSubmit() {
     const q = input.trim();
     if (!q || isStreaming) return;
     setInput("");
-    setActiveQuestion(q);
     ask(q);
   }
 
-  const activeEntry: QueryEntry | null = activeQuestion
-    ? { id: "active", question: activeQuestion, steps, answer, error, isStreaming, streamStatus, elapsed }
-    : null;
-
-  const isEmpty = history.length === 0 && !activeEntry;
+  const isEmpty = turns.length === 0 && activeTurn === null;
 
   return (
     <div className="flex h-[calc(100vh-120px)] flex-col">
       {/* Message area */}
       <div className="flex-1 overflow-y-auto px-2 py-4">
-        {isEmpty ? (
-          <EmptyState onExample={(q) => { setInput(q); }} />
-        ) : (
-          <div className="mx-auto max-w-3xl space-y-8">
-            {history.map((entry) => (
-              <QueryResult key={entry.id} entry={entry} />
-            ))}
-            {activeEntry && <QueryResult entry={activeEntry} />}
-            <div ref={bottomRef} />
-          </div>
-        )}
+        <div className="mx-auto max-w-3xl h-full">
+          <ConversationThread
+            turns={turns}
+            activeTurn={activeTurn}
+            streamStatus={streamStatus}
+            elapsed={elapsed}
+            emptyState={isEmpty ? <EmptyState onExample={(q) => { setInput(q); }} /> : undefined}
+          />
+        </div>
       </div>
 
       {/* Input */}

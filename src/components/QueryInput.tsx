@@ -8,6 +8,7 @@ interface QueryInputProps {
   onSubmit: () => void;
   onCancel: () => void;
   isStreaming: boolean;
+  placeholder?: string;
 }
 
 export function QueryInput({
@@ -16,6 +17,7 @@ export function QueryInput({
   onSubmit,
   onCancel,
   isStreaming,
+  placeholder = "Ask a question about the variant dataset…",
 }: QueryInputProps) {
   const ref = useRef<HTMLTextAreaElement>(null);
 
@@ -46,7 +48,7 @@ export function QueryInput({
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={isStreaming}
-          placeholder="Ask a question about the variant dataset…"
+          placeholder={placeholder}
           rows={1}
           className="flex-1 resize-none bg-transparent text-sm text-brand-text placeholder-brand-muted/50 outline-none disabled:opacity-50"
         />

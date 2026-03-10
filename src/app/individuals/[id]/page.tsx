@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useIndividualVariants } from "@/hooks/useIndividualVariants";
 import { useSample } from "@/hooks/useSample";
 import { useClinvarVersion } from "@/hooks/useClinvarVersion";
+import { IndividualAgentPanel } from "@/components/IndividualAgentPanel";
 import type { Variant } from "@/lib/cohort-client";
 
 const SIG_COLORS: Record<string, string> = {
@@ -56,14 +57,12 @@ export default function IndividualPage({
 
   return (
     <div className="space-y-6">
+      <IndividualAgentPanel individualId={id} sample={sample ?? null} />
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Link href="/samples" className="text-xs text-brand-muted hover:text-brand-text transition-colors">
-            ← Samples
-          </Link>
-          <h1 className="text-2xl font-semibold text-brand-text font-mono">{id}</h1>
-        </div>
+        <Link href="/samples" className="text-xs text-brand-muted hover:text-brand-text transition-colors">
+          ← Samples
+        </Link>
         {clinvar?.loaded_version && (
           <span className="rounded-full border border-brand-border bg-brand-surface px-3 py-1 text-xs text-brand-muted">
             ClinVar <span className="text-brand-text font-mono">{clinvar.loaded_version}</span>
