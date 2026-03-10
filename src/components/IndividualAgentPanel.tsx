@@ -106,8 +106,7 @@ export function IndividualAgentPanel({ individualId, sample }: IndividualAgentPa
                 <div className="flex h-full items-center justify-center text-center px-4">
                   <p className="text-sm text-brand-muted">
                     Ask a question about{" "}
-                    <span className="text-brand-text">{displayName}</span>
-                    {" "}— the agent already knows which individual you&apos;re viewing.
+                    <span className="text-brand-text">{displayName}</span>.
                   </p>
                 </div>
               }
