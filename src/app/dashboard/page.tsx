@@ -106,37 +106,33 @@ export default function DashboardPage() {
           ) : individuals.length === 0 ? (
             <p className="text-sm text-brand-muted py-4">No individuals found.</p>
           ) : (
-            <>
+            <div className="overflow-y-auto" style={{ maxHeight: "260px" }}>
               <table className="w-full text-xs">
-                <thead>
+                <thead className="sticky top-0 bg-brand-surface">
                   <tr className="border-b border-brand-border">
                     <th className="pb-2 text-left font-semibold text-brand-cyan">ID</th>
                     <th className="pb-2 text-right font-semibold text-brand-cyan">Variants</th>
                     <th className="pb-2 text-right font-semibold text-brand-cyan">Pathogenic</th>
                   </tr>
                 </thead>
+                <tbody className="divide-y divide-brand-border/40">
+                  {individuals.map((ind) => (
+                    <tr key={ind.individual_id} className="transition-colors hover:bg-brand-border/20">
+                      <td className="py-2 font-mono">
+                        <Link
+                          href={`/individuals/${encodeURIComponent(ind.individual_id)}`}
+                          className="text-brand-cyan hover:underline"
+                        >
+                          {ind.individual_id}
+                        </Link>
+                      </td>
+                      <td className="py-2 text-right text-brand-muted">{ind.variant_count.toLocaleString()}</td>
+                      <td className="py-2 text-right text-brand-gold">{ind.pathogenic_count.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
-              <div className="overflow-y-auto" style={{ maxHeight: "260px" }}>
-                <table className="w-full text-xs">
-                  <tbody className="divide-y divide-brand-border/40">
-                    {individuals.map((ind) => (
-                      <tr key={ind.individual_id} className="transition-colors hover:bg-brand-border/20">
-                        <td className="py-2 font-mono">
-                          <Link
-                            href={`/individuals/${encodeURIComponent(ind.individual_id)}`}
-                            className="text-brand-cyan hover:underline"
-                          >
-                            {ind.individual_id}
-                          </Link>
-                        </td>
-                        <td className="py-2 text-right text-brand-muted">{ind.variant_count.toLocaleString()}</td>
-                        <td className="py-2 text-right text-brand-gold">{ind.pathogenic_count.toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
+            </div>
           )}
         </Section>
 
