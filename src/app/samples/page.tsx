@@ -15,9 +15,32 @@ const SUPERPOPULATIONS = [
 ];
 
 const POPULATIONS = [
-  "ACB", "ASW", "BEB", "CDX", "CEU", "CHB", "CHS", "CLM",
-  "ESN", "FIN", "GBR", "GIH", "GWD", "IBS", "ITU", "JPT",
-  "KHV", "LWK", "MSL", "MXL", "PEL", "PJL", "PUR", "STU", "TSI", "YRI",
+  { code: "ACB", name: "African Caribbean in Barbados" },
+  { code: "ASW", name: "Americans of African Ancestry in SW USA" },
+  { code: "BEB", name: "Bengali at Dhaka, Bangladesh" },
+  { code: "CDX", name: "Chinese Dai in Xishuangbanna, China" },
+  { code: "CEU", name: "Utah Residents with NW European Ancestry" },
+  { code: "CHB", name: "Han Chinese in Beijing, China" },
+  { code: "CHS", name: "Southern Han Chinese" },
+  { code: "CLM", name: "Colombians at Medellin, Colombia" },
+  { code: "ESN", name: "Esan in Nigeria" },
+  { code: "FIN", name: "Finnish in Finland" },
+  { code: "GBR", name: "British in England and Scotland" },
+  { code: "GIH", name: "Gujarati Indian at Houston, Texas" },
+  { code: "GWD", name: "Gambian in Western Divisions in the Gambia" },
+  { code: "IBS", name: "Iberian Population in Spain" },
+  { code: "ITU", name: "Indian Telugu in the UK" },
+  { code: "JPT", name: "Japanese in Tokyo, Japan" },
+  { code: "KHV", name: "Kinh in Ho Chi Minh City, Vietnam" },
+  { code: "LWK", name: "Luhya in Webuye, Kenya" },
+  { code: "MSL", name: "Mende in Sierra Leone" },
+  { code: "MXL", name: "Mexican Ancestry at Los Angeles, California" },
+  { code: "PEL", name: "Peruvians at Lima, Peru" },
+  { code: "PJL", name: "Punjabi at Lahore, Pakistan" },
+  { code: "PUR", name: "Puerto Ricans at Puerto Rico" },
+  { code: "STU", name: "Sri Lankan Tamil at the UK" },
+  { code: "TSI", name: "Toscani at Italia" },
+  { code: "YRI", name: "Yoruba in Ibadan, Nigeria" },
 ];
 
 function s3VcfUri(individualId: string): string {
@@ -93,7 +116,7 @@ export default function SamplesPage() {
           >
             <option value="">All populations</option>
             {POPULATIONS.map((p) => (
-              <option key={p} value={p}>{p}</option>
+              <option key={p.code} value={p.code}>{p.name} ({p.code})</option>
             ))}
           </select>
 

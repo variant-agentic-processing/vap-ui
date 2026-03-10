@@ -95,10 +95,7 @@ export default function DashboardPage() {
           value={loading ? "—" : pathogenicCount.toLocaleString()}
           accent
         />
-        <StatCard
-          label="ClinVar Release"
-          value={clinvarLoading ? "—" : (clinvar?.loaded_version ?? "Unknown")}
-        />
+        <ClinvarStatCard version={clinvarLoading ? null : (clinvar?.loaded_version ?? null)} />
       </div>
 
       <div className="grid grid-cols-2 gap-6">
@@ -109,31 +106,33 @@ export default function DashboardPage() {
           ) : individuals.length === 0 ? (
             <p className="text-sm text-brand-muted py-4">No individuals found.</p>
           ) : (
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-brand-border">
-                  <th className="pb-2 text-left font-semibold text-brand-cyan">ID</th>
-                  <th className="pb-2 text-right font-semibold text-brand-cyan">Variants</th>
-                  <th className="pb-2 text-right font-semibold text-brand-cyan">Pathogenic</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-brand-border/40">
-                {individuals.map((ind) => (
-                  <tr key={ind.individual_id} className="transition-colors hover:bg-brand-border/20">
-                    <td className="py-2 font-mono">
-                      <Link
-                        href={`/individuals/${encodeURIComponent(ind.individual_id)}`}
-                        className="text-brand-cyan hover:underline"
-                      >
-                        {ind.individual_id}
-                      </Link>
-                    </td>
-                    <td className="py-2 text-right text-brand-muted">{ind.variant_count.toLocaleString()}</td>
-                    <td className="py-2 text-right text-brand-gold">{ind.pathogenic_count.toLocaleString()}</td>
+            <div className="overflow-y-auto" style={{ maxHeight: "260px", scrollbarGutter: "stable" }}>
+              <table className="w-full text-xs">
+                <thead className="sticky top-0 bg-brand-surface">
+                  <tr className="border-b border-brand-border">
+                    <th className="pb-2 text-left font-semibold text-brand-cyan">ID</th>
+                    <th className="pb-2 text-right font-semibold text-brand-cyan">Variants</th>
+                    <th className="pb-2 text-center font-semibold text-brand-cyan">Pathogenic</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-brand-border/40">
+                  {individuals.map((ind) => (
+                    <tr key={ind.individual_id} className="transition-colors hover:bg-brand-border/20">
+                      <td className="py-2 font-mono">
+                        <Link
+                          href={`/individuals/${encodeURIComponent(ind.individual_id)}`}
+                          className="text-brand-cyan hover:underline"
+                        >
+                          {ind.individual_id}
+                        </Link>
+                      </td>
+                      <td className="py-2 text-right text-brand-muted">{ind.variant_count.toLocaleString()}</td>
+                      <td className="py-2 text-center text-brand-gold">{ind.pathogenic_count.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </Section>
 
@@ -257,6 +256,30 @@ function LoadingRows() {
       {[1, 2, 3].map((i) => (
         <div key={i} className="h-4 rounded bg-brand-border/30 animate-pulse" />
       ))}
+    </div>
+  );
+}
+
+function ClinvarStatCard({ version }: { version: string | null }) {
+  const isStale = (() => {
+    if (!version) return false;
+    const released = new Date(version);
+    const ageMs = Date.now() - released.getTime();
+    return ageMs > 30 * 24 * 60 * 60 * 1000;
+  })();
+
+  return (
+    <div className={[
+      "rounded-xl border px-5 py-4",
+      isStale ? "border-red-800/40 bg-red-900/10" : "border-brand-border bg-brand-surface",
+    ].join(" ")}>
+      <p className={`text-xs ${isStale ? "text-red-400/70" : "text-brand-muted"}`}>ClinVar Release</p>
+      <p className={`mt-1 text-3xl font-semibold ${isStale ? "text-red-400" : "text-brand-text"}`}>
+        {version ?? "—"}
+      </p>
+      {isStale && (
+        <p className="mt-1.5 text-xs text-red-400/80">Refresh recommended</p>
+      )}
     </div>
   );
 }
