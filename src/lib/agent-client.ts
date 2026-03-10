@@ -1,4 +1,4 @@
-import type { AgentEvent, AgentHealth } from "@/types/api";
+import type { AgentEvent, AgentHealth, Message } from "@/types/api";
 
 const BASE_URL = "/api/agent";
 
@@ -18,13 +18,14 @@ export async function getAgentHealth(): Promise<AgentHealth> {
  *   }
  */
 export async function* streamQuery(
-  question: string,
+  messages: Message[],
   signal?: AbortSignal,
+  context?: string,
 ): AsyncGenerator<AgentEvent> {
   const res = await fetch(`${BASE_URL}/query`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question }),
+    body: JSON.stringify({ messages, context }),
     signal,
   });
 

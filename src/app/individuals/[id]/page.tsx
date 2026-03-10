@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useIndividualVariants } from "@/hooks/useIndividualVariants";
 import { useSample } from "@/hooks/useSample";
 import { useClinvarVersion } from "@/hooks/useClinvarVersion";
+import { IndividualAgentPanel } from "@/components/IndividualAgentPanel";
 import type { Variant } from "@/lib/cohort-client";
 
 const SIG_COLORS: Record<string, string> = {
@@ -56,6 +57,7 @@ export default function IndividualPage({
 
   return (
     <div className="space-y-6">
+      <IndividualAgentPanel individualId={id} sample={sample ?? null} />
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">

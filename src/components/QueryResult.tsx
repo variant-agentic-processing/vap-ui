@@ -3,19 +3,14 @@
 import { useState } from "react";
 import Markdown from "react-markdown";
 import { ToolCallStep } from "./ToolCallStep";
-import type { QueryStep } from "@/hooks/useAgentQuery";
+import type { ConversationTurn } from "@/hooks/useAgentQuery";
 import type { StreamStatus } from "@/hooks/useStreamTimer";
 
-export interface QueryEntry {
-  id: string;
-  question: string;
-  steps: QueryStep[];
-  answer: string | null;
-  error: string | null;
+export type QueryEntry = ConversationTurn & {
   isStreaming?: boolean;
   streamStatus?: StreamStatus;
   elapsed?: number;
-}
+};
 
 export function QueryResult({ entry }: { entry: QueryEntry }) {
   const [stepsOpen, setStepsOpen] = useState(false);
