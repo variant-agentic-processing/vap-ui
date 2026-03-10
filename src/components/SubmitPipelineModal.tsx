@@ -14,7 +14,6 @@ export function SubmitPipelineModal({ onClose, onSubmit }: SubmitPipelineModalPr
   const [individualId, setIndividualId] = useState("");
   const [forceNormalize, setForceNormalize] = useState(false);
   const [forceLoad, setForceLoad] = useState(false);
-  const [forceDownload, setForceDownload] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,9 +37,7 @@ export function SubmitPipelineModal({ onClose, onSubmit }: SubmitPipelineModalPr
             }
           : {
               type: "clinvar_refresh",
-              config: {
-                ...(forceDownload && { force_download: true }),
-              },
+              config: {},
             };
       await onSubmit(body);
       onClose();
@@ -102,19 +99,11 @@ export function SubmitPipelineModal({ onClose, onSubmit }: SubmitPipelineModalPr
             </div>
           </>
         ) : (
-          <div className="rounded-lg border border-brand-border bg-brand-navy/50 p-4 space-y-3">
+          <div className="rounded-lg border border-brand-border bg-brand-navy/50 p-4">
             <p className="text-xs text-brand-muted">
-              Downloads the latest ClinVar release from NCBI and reloads the annotations table.
+              Downloads the latest ClinVar release from NCBI. If the VCF version matches the
+              currently loaded version, the pipeline will stop early — no reload needed.
             </p>
-            <div className="pt-1">
-              <p className="mb-3 text-xs font-medium text-brand-muted">Overrides</p>
-              <CheckboxOption
-                checked={forceDownload}
-                onChange={setForceDownload}
-                label="Force download"
-                hint="Re-download from NCBI even if a cached copy exists in GCS"
-              />
-            </div>
           </div>
         )}
 
