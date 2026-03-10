@@ -106,7 +106,7 @@ export default function DashboardPage() {
           ) : individuals.length === 0 ? (
             <p className="text-sm text-brand-muted py-4">No individuals found.</p>
           ) : (
-            <div className="overflow-y-auto" style={{ maxHeight: "260px" }}>
+            <div className="overflow-y-auto" style={{ maxHeight: "260px", scrollbarGutter: "stable" }}>
               <table className="w-full text-xs">
                 <thead className="sticky top-0 bg-brand-surface">
                   <tr className="border-b border-brand-border">
