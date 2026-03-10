@@ -1,18 +1,19 @@
 # vap-ui
 
-Browser-based internal tool for the [Variant Agentic Processing](https://github.com/variant-agentic-processing) platform. Provides three primary views: pipeline management, natural language agent queries, and a cohort data dashboard.
+Browser-based internal tool for the [Variant Agentic Processing](https://github.com/variant-agentic-processing) platform. Provides four primary views: pipeline management, natural language agent queries, cohort data dashboard, and sample browser.
 
 ## Overview
 
-- **Dashboard** — cohort-level stats (total variants, pathogenic counts), top genes by pathogenic burden, clinical significance breakdown, per-individual drill-down to a full variant table
+- **Dashboard** — cohort-level stats (total variants, pathogenic counts, ClinVar release), top genes by pathogenic burden, clinical significance breakdown, per-individual drill-down to a full variant table
 - **Query** — natural language interface over variant data; streams tool calls and answers from the agent-service as SSE events
 - **Pipelines** — submit VCF ingest and ClinVar refresh jobs, monitor status, view step-by-step progress
+- **Samples** — browse, search, and filter 2,504 1000 Genomes individuals; trigger VCF ingest per individual
 
 All routes are VPN-gated — no auth layer. Cloud Run internal ingress (`INGRESS_TRAFFIC_INTERNAL_ONLY`) is the security boundary.
 
 ## Prerequisites
 
-- `variant-mcp-server`, `agent-service`, and `workflow-service` deployed and reachable
+- `variant-mcp-server`, `agent-service`, `workflow-service`, and `sample-service` deployed and reachable
 - VPN connected before accessing the deployed service
 - `genomic-pipeline` Artifact Registry repository exists
 - Node 20+ for local development
@@ -104,29 +105,35 @@ vap-ui/
 ├── src/
 │   ├── app/
 │   │   ├── api/
-│   │   │   ├── agent/[...path]/route.ts      # runtime proxy → AGENT_SERVICE_URL
-│   │   │   ├── mcp/[...path]/route.ts        # runtime proxy → MCP_SERVER_URL
-│   │   │   └── workflow/[...path]/route.ts   # runtime proxy → WORKFLOW_SERVICE_URL
-│   │   ├── dashboard/page.tsx                # cohort stats + individuals table
-│   │   ├── individuals/[id]/page.tsx         # per-individual variant table (up to 999 rows)
-│   │   ├── pipelines/page.tsx                # pipeline list + submit forms
-│   │   ├── query/page.tsx                    # agent query interface
-│   │   └── layout.tsx                        # shared layout + nav
+│   │   │   ├── agent/[...path]/route.ts         # runtime proxy → AGENT_SERVICE_URL
+│   │   │   ├── mcp/[...path]/route.ts           # runtime proxy → MCP_SERVER_URL
+│   │   │   ├── samples/[[...path]]/route.ts     # runtime proxy → SAMPLE_SERVICE_URL
+│   │   │   └── workflow/[...path]/route.ts      # runtime proxy → WORKFLOW_SERVICE_URL
+│   │   ├── dashboard/page.tsx                   # cohort stats + ClinVar version + individuals table
+│   │   ├── individuals/[id]/page.tsx            # per-individual variant table
+│   │   ├── pipelines/page.tsx                   # pipeline list + submit forms
+│   │   ├── query/page.tsx                       # agent query interface
+│   │   ├── samples/page.tsx                     # sample browser + ingest trigger
+│   │   └── layout.tsx                           # shared layout + nav
 │   ├── components/
 │   │   ├── Nav.tsx
 │   │   ├── HealthBanner.tsx
+│   │   ├── SubmitPipelineModal.tsx
 │   │   ├── QueryInput.tsx / QueryResult.tsx / ToolCallStep.tsx
 │   │   └── StatusBadge.tsx / Modal.tsx / ...
 │   ├── hooks/
-│   │   ├── useAgentQuery.ts                  # SSE streaming hook
-│   │   ├── useDashboard.ts                   # cohort data fetching
-│   │   ├── useIndividualVariants.ts          # per-individual variant fetch
-│   │   ├── usePipelines.ts / usePipeline.ts  # pipeline list + detail
-│   │   └── useHealth.ts                      # backend health checks
+│   │   ├── useAgentQuery.ts                     # SSE streaming hook
+│   │   ├── useClinvarVersion.ts                 # ClinVar release version fetch
+│   │   ├── useDashboard.ts                      # cohort data fetching
+│   │   ├── useIndividualVariants.ts             # per-individual variant fetch
+│   │   ├── usePipelines.ts / usePipeline.ts     # pipeline list + detail
+│   │   ├── useSamples.ts / useSample.ts         # sample list + detail
+│   │   └── useHealth.ts                         # backend health checks
 │   └── lib/
-│       ├── agent-client.ts                   # typed client for agent-service
-│       ├── cohort-client.ts                  # typed client for mcp-server REST endpoints
-│       └── workflow-client.ts                # typed client for workflow-service
+│       ├── agent-client.ts                      # typed client for agent-service
+│       ├── cohort-client.ts                     # typed client for mcp-server REST endpoints
+│       ├── sample-client.ts                     # typed client for sample-service
+│       └── workflow-client.ts                   # typed client for workflow-service
 ├── deploy/
 │   ├── __main__.py          # Pulumi Cloud Run deploy
 │   ├── Pulumi.yaml
