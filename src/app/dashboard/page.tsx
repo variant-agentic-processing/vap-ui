@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useDashboard } from "@/hooks/useDashboard";
+import { useClinvarVersion } from "@/hooks/useClinvarVersion";
 
 export default function DashboardPage() {
   const [geneInput, setGeneInput] = useState("");
@@ -10,6 +11,7 @@ export default function DashboardPage() {
 
   const { cohortSummary, topGenes, consequences, individuals, loading, error } =
     useDashboard(activeGenes);
+  const { data: clinvar, loading: clinvarLoading } = useClinvarVersion();
 
   function applyGeneFilter() {
     const genes = geneInput
@@ -85,13 +87,17 @@ export default function DashboardPage() {
       )}
 
       {/* Stat cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <StatCard label="Individuals" value={loading ? "—" : String(individuals.length)} />
         <StatCard label="Annotated Variants" value={loading ? "—" : totalVariants.toLocaleString()} />
         <StatCard
           label="Pathogenic / Likely Pathogenic"
           value={loading ? "—" : pathogenicCount.toLocaleString()}
           accent
+        />
+        <StatCard
+          label="ClinVar Release"
+          value={clinvarLoading ? "—" : (clinvar?.loaded_version ?? "Unknown")}
         />
       </div>
 

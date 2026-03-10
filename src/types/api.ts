@@ -75,6 +75,11 @@ export interface SystemStatus {
   storage: Record<string, unknown>;
 }
 
+export interface ClinvarVersion {
+  loaded_version: string | null;
+  completed_at: string | null;
+}
+
 // ─── Agent Service ───────────────────────────────────────────────────────────
 
 export interface AgentHealth {

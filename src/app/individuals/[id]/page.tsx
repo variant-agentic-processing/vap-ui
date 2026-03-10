@@ -4,6 +4,7 @@ import { use } from "react";
 import Link from "next/link";
 import { useIndividualVariants } from "@/hooks/useIndividualVariants";
 import { useSample } from "@/hooks/useSample";
+import { useClinvarVersion } from "@/hooks/useClinvarVersion";
 import type { Variant } from "@/lib/cohort-client";
 
 const SIG_COLORS: Record<string, string> = {
@@ -51,15 +52,23 @@ export default function IndividualPage({
   const { id } = use(params);
   const { data, loading, error } = useIndividualVariants(id);
   const { sample } = useSample(id);
+  const { data: clinvar } = useClinvarVersion();
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/samples" className="text-xs text-brand-muted hover:text-brand-text transition-colors">
-          ← Samples
-        </Link>
-        <h1 className="text-2xl font-semibold text-brand-text font-mono">{id}</h1>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Link href="/samples" className="text-xs text-brand-muted hover:text-brand-text transition-colors">
+            ← Samples
+          </Link>
+          <h1 className="text-2xl font-semibold text-brand-text font-mono">{id}</h1>
+        </div>
+        {clinvar?.loaded_version && (
+          <span className="rounded-full border border-brand-border bg-brand-surface px-3 py-1 text-xs text-brand-muted">
+            ClinVar <span className="text-brand-text font-mono">{clinvar.loaded_version}</span>
+          </span>
+        )}
       </div>
 
       {/* Sample metadata card */}

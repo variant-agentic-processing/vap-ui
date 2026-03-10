@@ -1,4 +1,5 @@
 import type {
+  ClinvarVersion,
   Pipeline,
   PipelineCreate,
   PipelineListResponse,
@@ -69,4 +70,8 @@ export function deletePipeline(id: string): Promise<void> {
 
 export function getSystemStatus(): Promise<SystemStatus> {
   return request<SystemStatus>("/system/status");
+}
+
+export function getClinvarVersion(): Promise<ClinvarVersion> {
+  return request<ClinvarVersion>("/system/clinvar-version");
 }
