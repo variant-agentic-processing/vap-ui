@@ -3,6 +3,7 @@
 import { use } from "react";
 import Link from "next/link";
 import { useIndividualVariants } from "@/hooks/useIndividualVariants";
+import { useSample } from "@/hooks/useSample";
 import type { Variant } from "@/lib/cohort-client";
 
 const SIG_COLORS: Record<string, string> = {
@@ -31,13 +32,13 @@ const COLUMNS: { label: string; width: number }[] = [
   { label: "Filter",       width: 64  },
   { label: "Gene",         width: 80  },
   { label: "Significance", width: 160 },
+  { label: "ClinVar ID",   width: 90  },
   { label: "Review Status",width: 160 },
-  { label: "Consequence",  width: 160 },
   { label: "Condition",    width: 200 },
+  { label: "Consequence",  width: 160 },
   { label: "HGVS c.",      width: 160 },
   { label: "HGVS p.",      width: 140 },
   { label: "rsID",         width: 100 },
-  { label: "ClinVar ID",   width: 90  },
   { label: "Last Eval.",   width: 90  },
   { label: "AF",           width: 72  },
 ];
@@ -49,16 +50,40 @@ export default function IndividualPage({
 }) {
   const { id } = use(params);
   const { data, loading, error } = useIndividualVariants(id);
+  const { sample } = useSample(id);
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/dashboard" className="text-xs text-brand-muted hover:text-brand-text transition-colors">
-          ← Dashboard
+        <Link href="/samples" className="text-xs text-brand-muted hover:text-brand-text transition-colors">
+          ← Samples
         </Link>
         <h1 className="text-2xl font-semibold text-brand-text font-mono">{id}</h1>
       </div>
+
+      {/* Sample metadata card */}
+      {sample && (
+        <div className="rounded-xl border border-brand-border bg-brand-surface px-5 py-4">
+          <div className="flex items-baseline justify-between gap-4">
+            <span className="text-lg font-semibold text-brand-text">{sample.display_name}</span>
+            <span className="font-mono text-sm text-brand-muted">{sample.individual_id}</span>
+          </div>
+          <p className="mt-1 text-sm text-brand-muted">
+            {[
+              sample.sex ? sample.sex.charAt(0).toUpperCase() + sample.sex.slice(1) : null,
+              sample.population_name && sample.population_code
+                ? `${sample.population_name} (${sample.population_code})`
+                : sample.population_name ?? sample.population_code,
+              sample.superpopulation_name && sample.superpopulation_code
+                ? `${sample.superpopulation_name} (${sample.superpopulation_code})`
+                : sample.superpopulation_name ?? sample.superpopulation_code,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+        </div>
+      )}
 
       {/* Truncation banner */}
       {data?.truncated && (
@@ -169,12 +194,6 @@ function VariantRow({ variant: v }: { variant: Variant }) {
       <Cell value={v.filter}      className="text-brand-muted" />
       <Cell value={v.gene_symbol} className="text-brand-text" mono />
       <Cell value={sigLabel || null}       className={sigClass} />
-      <Cell value={reviewLabel || null}    className="text-brand-muted" />
-      <Cell value={consequenceLabel || null} className="text-brand-muted" />
-      <Cell value={v.condition_name}       className="text-brand-muted" />
-      <Cell value={v.hgvs_c}     className="text-brand-muted text-[11px]" mono />
-      <Cell value={v.hgvs_p}     className="text-brand-muted text-[11px]" mono />
-      <Cell value={v.rsid}        className="text-brand-muted" mono />
       <td
         className="px-3 py-1.5 text-brand-muted font-mono overflow-hidden"
         style={{ whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}
@@ -191,6 +210,12 @@ function VariantRow({ variant: v }: { variant: Variant }) {
           </a>
         ) : "—"}
       </td>
+      <Cell value={reviewLabel || null}    className="text-brand-muted" />
+      <Cell value={v.condition_name}       className="text-brand-muted" />
+      <Cell value={consequenceLabel || null} className="text-brand-muted" />
+      <Cell value={v.hgvs_c}     className="text-brand-muted text-[11px]" mono />
+      <Cell value={v.hgvs_p}     className="text-brand-muted text-[11px]" mono />
+      <Cell value={v.rsid}        className="text-brand-muted" mono />
       <Cell value={v.clinvar_last_evaluated || null} className="text-brand-muted" />
       <Cell value={v.allele_frequency > 0 ? v.allele_frequency.toExponential(2) : null} className="text-right text-brand-muted" />
     </tr>

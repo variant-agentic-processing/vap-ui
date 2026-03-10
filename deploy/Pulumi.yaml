@@ -1,0 +1,3 @@
+name: vap-ui
+runtime: python
+description: Variant Platform UI — Next.js Cloud Run service
