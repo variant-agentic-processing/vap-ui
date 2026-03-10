@@ -3,6 +3,7 @@
 import { use } from "react";
 import Link from "next/link";
 import { useIndividualVariants } from "@/hooks/useIndividualVariants";
+import { useSample } from "@/hooks/useSample";
 import type { Variant } from "@/lib/cohort-client";
 
 const SIG_COLORS: Record<string, string> = {
@@ -49,16 +50,40 @@ export default function IndividualPage({
 }) {
   const { id } = use(params);
   const { data, loading, error } = useIndividualVariants(id);
+  const { sample } = useSample(id);
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/dashboard" className="text-xs text-brand-muted hover:text-brand-text transition-colors">
-          ← Dashboard
+        <Link href="/samples" className="text-xs text-brand-muted hover:text-brand-text transition-colors">
+          ← Samples
         </Link>
         <h1 className="text-2xl font-semibold text-brand-text font-mono">{id}</h1>
       </div>
+
+      {/* Sample metadata card */}
+      {sample && (
+        <div className="rounded-xl border border-brand-border bg-brand-surface px-5 py-4">
+          <div className="flex items-baseline justify-between gap-4">
+            <span className="text-lg font-semibold text-brand-text">{sample.display_name}</span>
+            <span className="font-mono text-sm text-brand-muted">{sample.individual_id}</span>
+          </div>
+          <p className="mt-1 text-sm text-brand-muted">
+            {[
+              sample.sex ? sample.sex.charAt(0).toUpperCase() + sample.sex.slice(1) : null,
+              sample.population_name && sample.population_code
+                ? `${sample.population_name} (${sample.population_code})`
+                : sample.population_name ?? sample.population_code,
+              sample.superpopulation_name && sample.superpopulation_code
+                ? `${sample.superpopulation_name} (${sample.superpopulation_code})`
+                : sample.superpopulation_name ?? sample.superpopulation_code,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+        </div>
+      )}
 
       {/* Truncation banner */}
       {data?.truncated && (

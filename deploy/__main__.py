@@ -15,6 +15,7 @@ vap_ui_sa_email = infra.get_output("sa_vap_ui")
 mcp_server_url = "https://mcp-variant-server-fno64g2krq-uc.a.run.app"
 agent_service_url = "https://agent-service-fno64g2krq-uc.a.run.app"
 workflow_service_url = "https://workflow-service-fno64g2krq-uc.a.run.app"
+sample_service_url = "https://sample-service-fno64g2krq-uc.a.run.app"
 
 image = f"{region}-docker.pkg.dev/{project_id}/genomic-pipeline/vap-ui:{image_tag}"
 
@@ -50,6 +51,9 @@ service = gcp.cloudrunv2.Service(
                     ),
                     gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
                         name="WORKFLOW_SERVICE_URL", value=workflow_service_url
+                    ),
+                    gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                        name="SAMPLE_SERVICE_URL", value=sample_service_url
                     ),
                 ],
                 liveness_probe=gcp.cloudrunv2.ServiceTemplateContainerLivenessProbeArgs(
