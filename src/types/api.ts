@@ -80,6 +80,14 @@ export interface ClinvarVersion {
   completed_at: string | null;
 }
 
+export interface DashboardStats {
+  computed_at: string;
+  cohort_summary: { value: string; count: number }[];
+  consequences: { value: string; count: number }[];
+  top_genes: { gene_symbol: string; variant_count: number; pathogenic_count: number }[];
+  individuals: { individual_id: string; variant_count: number; pathogenic_count: number }[];
+}
+
 // ─── Agent Service ───────────────────────────────────────────────────────────
 
 export interface AgentHealth {

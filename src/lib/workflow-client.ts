@@ -1,5 +1,6 @@
 import type {
   ClinvarVersion,
+  DashboardStats,
   Pipeline,
   PipelineCreate,
   PipelineListResponse,
@@ -74,4 +75,8 @@ export function getSystemStatus(): Promise<SystemStatus> {
 
 export function getClinvarVersion(): Promise<ClinvarVersion> {
   return request<ClinvarVersion>("/system/clinvar-version");
+}
+
+export function getDashboardStats(): Promise<DashboardStats> {
+  return request<DashboardStats>("/system/dashboard-stats");
 }
