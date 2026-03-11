@@ -41,16 +41,16 @@ function sortPipelines(pipelines: Pipeline[], field: SortField, dir: SortDir): P
   });
 }
 
-type PageTab = "variants" | "clinvar" | "system";
+type PageTab = "system" | "variants" | "clinvar";
 
 const TAB_LABELS: Record<PageTab, string> = {
+  system:   "System Status",
   variants: "Variant Ingestion",
   clinvar:  "ClinVar",
-  system:   "System Status",
 };
 
 export default function ToolsPage() {
-  const [tab, setTab] = useState<PageTab>("variants");
+  const [tab, setTab] = useState<PageTab>("system");
 
   return (
     <div>
@@ -66,7 +66,7 @@ export default function ToolsPage() {
 
       {/* Top-level tabs */}
       <div className="mb-6 flex items-center gap-1 border-b border-brand-border">
-        {(["variants", "clinvar", "system"] as PageTab[]).map((t) => (
+        {(["system", "variants", "clinvar"] as PageTab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -365,7 +365,7 @@ function SystemTab() {
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-muted">Services</h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <ServiceCard name="workflow-service" state={workflow} />
-          <ServiceCard name="agent-service" state={agent} />
+          <ServiceCard name="Varis" state={agent} />
           <ServiceCard name="variant-mcp-server" state={mcp} />
           <ServiceCard name="stats-service" state={stats} />
           <ServiceCard name="sample-service" state={sample} />
