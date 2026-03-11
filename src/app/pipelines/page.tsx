@@ -5,7 +5,7 @@ import { PipelineDetailModal } from "@/components/PipelineDetailModal";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SubmitPipelineModal } from "@/components/SubmitPipelineModal";
 import { usePipelines } from "@/hooks/usePipelines";
-import { useHealth, type ServiceHealth, type ServiceState } from "@/hooks/useHealth";
+import { useHealth, type ServiceHealth, type ServiceState, type ClinvarState } from "@/hooks/useHealth";
 import { AgentPanel } from "@/components/AgentPanel";
 import { formatDate, formatRuntime } from "@/lib/utils";
 import type { Pipeline, PipelineStatus, PipelineType } from "@/types/api";
@@ -244,10 +244,10 @@ function ServiceCard({ name, state }: { name: string; state: ServiceState }) {
 }
 
 function SystemTab() {
-  const { workflow, agent, stats, refresh } = useHealth();
+  const { workflow, agent, mcp, stats, sample, clinvar, refresh } = useHealth();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <p className="text-xs text-brand-muted">Live status of all platform services.</p>
         <button
@@ -258,11 +258,84 @@ function SystemTab() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <ServiceCard name="workflow-service" state={workflow} />
-        <ServiceCard name="agent-service" state={agent} />
-        <ServiceCard name="stats-service" state={stats} />
+      {/* Services */}
+      <div>
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-muted">Services</h3>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ServiceCard name="workflow-service" state={workflow} />
+          <ServiceCard name="agent-service" state={agent} />
+          <ServiceCard name="variant-mcp-server" state={mcp} />
+          <ServiceCard name="stats-service" state={stats} />
+          <ServiceCard name="sample-service" state={sample} />
+        </div>
       </div>
+
+      {/* Data freshness */}
+      <div>
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-muted">Data</h3>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <ClinvarCard clinvar={clinvar} />
+          <StatsComputedCard state={stats} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ClinvarCard({ clinvar }: { clinvar: ClinvarState | null }) {
+  const isChecking = clinvar === null;
+  const isStale = clinvar?.isStale ?? false;
+
+  return (
+    <div className={[
+      "rounded-xl border px-5 py-4",
+      isStale ? "border-brand-gold/40 bg-brand-gold/5" : "border-brand-border bg-brand-surface",
+    ].join(" ")}>
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-brand-text">ClinVar</span>
+        {isChecking ? (
+          <span className="text-xs text-brand-muted">Checking…</span>
+        ) : isStale ? (
+          <span className="text-xs font-medium text-brand-gold">Stale</span>
+        ) : (
+          <span className="text-xs font-medium text-green-400">Current</span>
+        )}
+      </div>
+      {clinvar && (
+        <div className="mt-1.5 space-y-0.5">
+          <p className="text-xs text-brand-muted">
+            Version <span className="font-mono text-brand-text">{clinvar.version ?? "—"}</span>
+          </p>
+          {clinvar.loadedAt && (
+            <p className="text-xs text-brand-muted">
+              Loaded {new Date(clinvar.loadedAt).toLocaleDateString()}
+              {isStale && " · refresh recommended"}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatsComputedCard({ state }: { state: ServiceState }) {
+  return (
+    <div className="rounded-xl border border-brand-border bg-brand-surface px-5 py-4">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-brand-text">Dashboard Stats</span>
+        {state.status === "checking" ? (
+          <span className="text-xs text-brand-muted">Checking…</span>
+        ) : state.status === "unreachable" ? (
+          <span className="text-xs font-medium text-red-400">Unavailable</span>
+        ) : state.detail?.startsWith("Not") ? (
+          <span className="text-xs font-medium text-brand-gold">Not computed</span>
+        ) : (
+          <span className="text-xs font-medium text-green-400">Ready</span>
+        )}
+      </div>
+      {state.detail && state.status !== "unreachable" && (
+        <p className="mt-1.5 text-xs text-brand-muted">{state.detail}</p>
+      )}
     </div>
   );
 }
