@@ -55,13 +55,24 @@ export function AgentPanel({ context, title = AGENT_NAME, subtitle = "Ask a ques
           {/* Header */}
           <div className="flex items-center justify-between border-b border-brand-border px-4 py-4">
             <div className="flex items-center gap-3">
-              <Image
-                src="/varis.jpg"
-                alt="Varis"
-                width={40}
-                height={40}
-                className="rounded-full object-cover ring-1 ring-brand-border"
-              />
+              <div className="group relative shrink-0">
+                <Image
+                  src="/varis.jpg"
+                  alt="Varis"
+                  width={40}
+                  height={40}
+                  className="rounded-full object-cover ring-1 ring-brand-border cursor-pointer"
+                />
+                <div className="pointer-events-none absolute bottom-full left-0 mb-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-50">
+                  <Image
+                    src="/varis.jpg"
+                    alt="Varis"
+                    width={160}
+                    height={160}
+                    className="rounded-2xl object-cover ring-1 ring-brand-border shadow-2xl"
+                  />
+                </div>
+              </div>
               <div>
                 <p className="text-base font-semibold text-brand-text">{title}</p>
                 <p className="text-xs text-brand-muted">{subtitle}</p>
