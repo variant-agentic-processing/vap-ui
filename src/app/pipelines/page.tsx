@@ -282,9 +282,33 @@ function SystemTab() {
   );
 }
 
+function parseVersionDate(version: string): Date | null {
+  // Handle YYYYMMDD format (e.g. "20250303")
+  if (/^\d{8}$/.test(version)) {
+    return new Date(
+      parseInt(version.slice(0, 4)),
+      parseInt(version.slice(4, 6)) - 1,
+      parseInt(version.slice(6, 8)),
+    );
+  }
+  // Handle YYYY-MM-DD or any other parseable format
+  const d = new Date(version);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 function ClinvarCard({ clinvar }: { clinvar: ClinvarState | null }) {
   const isChecking = clinvar === null;
   const isStale = clinvar?.isStale ?? false;
+
+  const displayDate = (() => {
+    if (!clinvar?.loadedAt && !clinvar?.version) return null;
+    const loaded = clinvar.loadedAt ? new Date(clinvar.loadedAt) : null;
+    const version = clinvar.version ? parseVersionDate(clinvar.version) : null;
+    if (!loaded && !version) return null;
+    if (!loaded) return version;
+    if (!version) return loaded;
+    return version > loaded ? version : loaded;
+  })();
 
   return (
     <div className={[
@@ -306,9 +330,9 @@ function ClinvarCard({ clinvar }: { clinvar: ClinvarState | null }) {
           <p className="text-xs text-brand-muted">
             Version <span className="font-mono text-brand-text">{clinvar.version ?? "—"}</span>
           </p>
-          {clinvar.loadedAt && (
+          {displayDate && (
             <p className="text-xs text-brand-muted">
-              Loaded {new Date(clinvar.loadedAt).toLocaleDateString()}
+              Loaded {displayDate.toLocaleDateString()}
               {isStale && " · refresh recommended"}
             </p>
           )}
