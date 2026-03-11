@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { QueryInput } from "./QueryInput";
 import { ConversationThread } from "./ConversationThread";
 import { useAgentQuery } from "@/hooks/useAgentQuery";
@@ -52,10 +53,19 @@ export function AgentPanel({ context, title = AGENT_NAME, subtitle = "Ask a ques
       {isOpen && (
         <div className="fixed bottom-0 right-0 z-40 flex h-[600px] w-[420px] flex-col rounded-tl-2xl border-l border-t border-brand-border bg-brand-navy shadow-2xl">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-brand-border px-4 py-3">
-            <div>
-              <p className="text-xs font-semibold text-brand-cyan">{title}</p>
-              <p className="text-xs text-brand-muted">{subtitle}</p>
+          <div className="flex items-center justify-between border-b border-brand-border px-4 py-4">
+            <div className="flex items-center gap-3">
+              <Image
+                src="/varis.jpg"
+                alt="Varis"
+                width={40}
+                height={40}
+                className="rounded-full object-cover ring-1 ring-brand-border"
+              />
+              <div>
+                <p className="text-base font-semibold text-brand-text">{title}</p>
+                <p className="text-xs text-brand-muted">{subtitle}</p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               {turns.length > 0 && (
