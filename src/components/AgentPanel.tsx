@@ -70,6 +70,7 @@ export function AgentPanel({ context, title = AGENT_NAME, subtitle = "Ask a ques
                     width={160}
                     height={160}
                     className="rounded-2xl object-cover ring-1 ring-brand-border shadow-2xl"
+                    style={{ width: 160, height: 160 }}
                   />
                 </div>
               </div>
