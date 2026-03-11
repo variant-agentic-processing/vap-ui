@@ -119,6 +119,7 @@ export function AgentPanel({ context, title = AGENT_NAME, subtitle = "Ask a ques
               onSubmit={handleSubmit}
               onCancel={cancel}
               isStreaming={isStreaming}
+              autoFocus
             />
           </div>
         </div>
