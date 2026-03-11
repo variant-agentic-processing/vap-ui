@@ -291,7 +291,11 @@ function parseVersionDate(version: string): Date | null {
       parseInt(version.slice(6, 8)),
     );
   }
-  // Handle YYYY-MM-DD or any other parseable format
+  // Handle YYYY-MM-DD — parse as local midnight to avoid UTC-offset display shift
+  const isoDate = /^(\d{4})-(\d{2})-(\d{2})$/.exec(version);
+  if (isoDate?.[1] && isoDate[2] && isoDate[3]) {
+    return new Date(parseInt(isoDate[1]), parseInt(isoDate[2]) - 1, parseInt(isoDate[3]));
+  }
   const d = new Date(version);
   return isNaN(d.getTime()) ? null : d;
 }
