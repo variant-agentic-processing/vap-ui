@@ -63,7 +63,7 @@ export function AgentPanel({ context, title = AGENT_NAME, subtitle = "Ask a ques
                   height={40}
                   className="rounded-full object-cover ring-1 ring-brand-border cursor-pointer"
                 />
-                <div className="pointer-events-none absolute bottom-full left-0 mb-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-50">
+                <div className="pointer-events-none absolute bottom-full left-0 mb-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-50 w-40">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/varis.jpg"
