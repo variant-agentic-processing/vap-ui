@@ -17,6 +17,7 @@ interface DashboardData {
   consequences: CohortBucket[];
   topGenes: TopGene[];
   individuals: Individual[];
+  totalVariants: number | null;
   loading: boolean;
   error: string | null;
 }
@@ -26,6 +27,7 @@ export function useDashboard(genes: string[]): DashboardData {
   const [consequences, setConsequences] = useState<CohortBucket[]>([]);
   const [topGenes, setTopGenes] = useState<TopGene[]>([]);
   const [individuals, setIndividuals] = useState<Individual[]>([]);
+  const [totalVariants, setTotalVariants] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,6 +47,7 @@ export function useDashboard(genes: string[]): DashboardData {
           setConsequences(stats.consequences);
           setTopGenes(stats.top_genes);
           setIndividuals(stats.individuals);
+          setTotalVariants(stats.total_variants ?? null);
         })
         .catch(() => {
           // Cache miss or stats-service unavailable — fall back to live queries
@@ -58,6 +61,7 @@ export function useDashboard(genes: string[]): DashboardData {
             setConsequences(cons.results);
             setTopGenes(genes.results);
             setIndividuals(inds.individuals);
+            setTotalVariants(inds.individuals.reduce((s: number, i: Individual) => s + i.variant_count, 0));
           });
         })
         .catch((e: unknown) => {
@@ -77,6 +81,7 @@ export function useDashboard(genes: string[]): DashboardData {
           setConsequences(cons.results);
           setTopGenes(genes.results);
           setIndividuals(inds.individuals);
+          setTotalVariants(inds.individuals.reduce((s: number, i: Individual) => s + i.variant_count, 0));
         })
         .catch((e: unknown) => {
           setError(e instanceof Error ? e.message : "Failed to load dashboard data");
@@ -85,5 +90,5 @@ export function useDashboard(genes: string[]): DashboardData {
     }
   }, [genesKey]);
 
-  return { cohortSummary, consequences, topGenes, individuals, loading, error };
+  return { cohortSummary, consequences, topGenes, individuals, totalVariants, loading, error };
 }

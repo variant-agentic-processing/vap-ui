@@ -24,7 +24,7 @@ export default function DashboardPage() {
     }
   }, []);
 
-  const { cohortSummary, topGenes, consequences, individuals, loading, error } =
+  const { cohortSummary, topGenes, consequences, individuals, totalVariants, loading, error } =
     useDashboard(activeGenes);
   const { data: clinvar, loading: clinvarLoading } = useClinvarVersion();
 
@@ -41,7 +41,7 @@ export default function DashboardPage() {
     setActiveGenes([]);
   }
 
-  const totalVariants = cohortSummary.reduce((s, r) => s + r.count, 0);
+  const annotatedVariants = cohortSummary.reduce((s, r) => s + r.count, 0);
   const pathogenicCount =
     cohortSummary.find((r) =>
       ["Pathogenic", "Likely_pathogenic", "Pathogenic/Likely_pathogenic"].includes(r.value)
@@ -103,9 +103,10 @@ export default function DashboardPage() {
       )}
 
       {/* Stat cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-5 gap-4">
+        <StatCard label="Total Variants" value={loading ? "—" : (totalVariants?.toLocaleString() ?? "—")} />
         <StatCard label="Individuals" value={loading ? "—" : String(individuals.length)} />
-        <StatCard label="Annotated Variants" value={loading ? "—" : totalVariants.toLocaleString()} />
+        <StatCard label="Annotated Variants" value={loading ? "—" : annotatedVariants.toLocaleString()} />
         <StatCard
           label="Pathogenic / Likely Pathogenic"
           value={loading ? "—" : pathogenicCount.toLocaleString()}
