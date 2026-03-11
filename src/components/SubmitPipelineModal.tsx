@@ -7,10 +7,11 @@ import type { PipelineCreate, PipelineType } from "@/types/api";
 interface SubmitPipelineModalProps {
   onClose: () => void;
   onSubmit: (body: PipelineCreate) => Promise<void>;
+  lockedType?: PipelineType;
 }
 
-export function SubmitPipelineModal({ onClose, onSubmit }: SubmitPipelineModalProps) {
-  const [type, setType] = useState<PipelineType>("vcf_ingest");
+export function SubmitPipelineModal({ onClose, onSubmit, lockedType }: SubmitPipelineModalProps) {
+  const [type, setType] = useState<PipelineType>(lockedType ?? "vcf_ingest");
   const [individualId, setIndividualId] = useState("");
   const [forceNormalize, setForceNormalize] = useState(false);
   const [forceLoad, setForceLoad] = useState(false);
@@ -48,26 +49,34 @@ export function SubmitPipelineModal({ onClose, onSubmit }: SubmitPipelineModalPr
     }
   }
 
+  const title = lockedType === "vcf_ingest"
+    ? "Submit VCF Ingest"
+    : lockedType === "clinvar_refresh"
+    ? "Submit ClinVar Refresh"
+    : "Submit Pipeline";
+
   return (
-    <Modal title="Submit Pipeline" onClose={onClose}>
-      {/* Type tabs */}
-      <div className="mb-5 flex rounded-lg bg-brand-navy p-1">
-        {(["vcf_ingest", "clinvar_refresh"] as PipelineType[]).map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setType(t)}
-            className={[
-              "flex-1 rounded-md py-1.5 text-xs font-medium transition-colors",
-              type === t
-                ? "bg-brand-border text-brand-cyan shadow-cyan-sm"
-                : "text-brand-muted hover:text-brand-text",
-            ].join(" ")}
-          >
-            {t === "vcf_ingest" ? "VCF Ingest" : "ClinVar Refresh"}
-          </button>
-        ))}
-      </div>
+    <Modal title={title} onClose={onClose}>
+      {/* Type tabs — only shown when not locked to a specific type */}
+      {!lockedType && (
+        <div className="mb-5 flex rounded-lg bg-brand-navy p-1">
+          {(["vcf_ingest", "clinvar_refresh"] as PipelineType[]).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setType(t)}
+              className={[
+                "flex-1 rounded-md py-1.5 text-xs font-medium transition-colors",
+                type === t
+                  ? "bg-brand-border text-brand-cyan shadow-cyan-sm"
+                  : "text-brand-muted hover:text-brand-text",
+              ].join(" ")}
+            >
+              {t === "vcf_ingest" ? "VCF Ingest" : "ClinVar Refresh"}
+            </button>
+          ))}
+        </div>
+      )}
 
       <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
         {type === "vcf_ingest" ? (
