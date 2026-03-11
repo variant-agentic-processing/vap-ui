@@ -5,6 +5,7 @@ import { PipelineDetailModal } from "@/components/PipelineDetailModal";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SubmitPipelineModal } from "@/components/SubmitPipelineModal";
 import { usePipelines } from "@/hooks/usePipelines";
+import { useHealth, type ServiceHealth, type ServiceState } from "@/hooks/useHealth";
 import { AgentPanel } from "@/components/AgentPanel";
 import { formatDate, formatRuntime } from "@/lib/utils";
 import type { Pipeline, PipelineStatus, PipelineType } from "@/types/api";
@@ -46,7 +47,49 @@ function sortPipelines(pipelines: Pipeline[], field: SortField, dir: SortDir): P
   });
 }
 
-export default function PipelinesPage() {
+type PageTab = "pipelines" | "system";
+
+export default function ToolsPage() {
+  const [tab, setTab] = useState<PageTab>("pipelines");
+
+  return (
+    <div>
+      <AgentPanel subtitle="Ask Varis about pipelines" />
+
+      {/* Page header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-brand-text">Tools</h1>
+        <p className="mt-1 text-sm text-brand-muted">
+          Pipeline management and system status.
+        </p>
+      </div>
+
+      {/* Top-level tabs */}
+      <div className="mb-6 flex items-center gap-1 border-b border-brand-border">
+        {(["pipelines", "system"] as PageTab[]).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={[
+              "px-4 py-2 text-sm font-medium capitalize transition-colors border-b-2 -mb-px",
+              tab === t
+                ? "border-brand-cyan text-brand-cyan"
+                : "border-transparent text-brand-muted hover:text-brand-text",
+            ].join(" ")}
+          >
+            {t === "pipelines" ? "Pipelines" : "System Status"}
+          </button>
+        ))}
+      </div>
+
+      {tab === "pipelines" ? <PipelinesTab /> : <SystemTab />}
+    </div>
+  );
+}
+
+// ─── Pipelines tab ────────────────────────────────────────────────────────────
+
+function PipelinesTab() {
   const [statusFilter, setStatusFilter] = useState<PipelineStatus | undefined>();
   const [showModal,    setShowModal]    = useState(false);
   const [selectedId,   setSelectedId]  = useState<string | null>(null);
@@ -74,16 +117,29 @@ export default function PipelinesPage() {
   }
 
   return (
-    <div>
-      <AgentPanel subtitle="Ask Varis about pipelines" />
-      {/* Header */}
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-brand-text">Pipelines</h1>
-          <p className="mt-1 text-sm text-brand-muted">
-            Submit and monitor VCF ingest and ClinVar refresh pipelines.
-          </p>
+    <>
+      <div className="mb-4 flex items-center justify-between">
+        {/* Status filter tabs */}
+        <div className="flex items-center gap-1">
+          {STATUS_FILTERS.map(({ label, value }) => (
+            <button
+              key={label}
+              onClick={() => setStatusFilter(value)}
+              className={[
+                "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                statusFilter === value
+                  ? "bg-brand-border text-brand-cyan"
+                  : "text-brand-muted hover:bg-brand-border/50 hover:text-brand-text",
+              ].join(" ")}
+            >
+              {label}
+            </button>
+          ))}
+          {!isLoading && (
+            <span className="ml-2 text-xs text-brand-muted">{total} total</span>
+          )}
         </div>
+
         <button
           onClick={() => setShowModal(true)}
           className="rounded-lg bg-brand-cyan px-4 py-2 text-sm font-semibold text-brand-navy transition-opacity hover:opacity-90"
@@ -92,29 +148,8 @@ export default function PipelinesPage() {
         </button>
       </div>
 
-      {/* Status filter tabs */}
-      <div className="mb-4 flex items-center gap-1">
-        {STATUS_FILTERS.map(({ label, value }) => (
-          <button
-            key={label}
-            onClick={() => setStatusFilter(value)}
-            className={[
-              "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-              statusFilter === value
-                ? "bg-brand-border text-brand-cyan"
-                : "text-brand-muted hover:bg-brand-border/50 hover:text-brand-text",
-            ].join(" ")}
-          >
-            {label}
-          </button>
-        ))}
-        {!isLoading && (
-          <span className="ml-2 text-xs text-brand-muted">{total} total</span>
-        )}
-      </div>
-
       {/* Table */}
-      <div className="rounded-xl border border-brand-border bg-brand-surface overflow-hidden max-h-[calc(100vh-220px)] overflow-y-auto">
+      <div className="rounded-xl border border-brand-border bg-brand-surface overflow-hidden max-h-[calc(100vh-280px)] overflow-y-auto">
         {error ? (
           <div className="p-8 text-center text-sm text-red-400">{error}</div>
         ) : isLoading ? (
@@ -164,9 +199,75 @@ export default function PipelinesPage() {
       {selectedId && (
         <PipelineDetailModal id={selectedId} onClose={() => setSelectedId(null)} />
       )}
+    </>
+  );
+}
+
+// ─── System status tab ────────────────────────────────────────────────────────
+
+const STATUS_DOT: Record<ServiceHealth, string> = {
+  checking:    "bg-brand-muted animate-pulse",
+  healthy:     "bg-green-400",
+  degraded:    "bg-brand-gold",
+  unreachable: "bg-red-500",
+};
+
+const STATUS_COLOR: Record<ServiceHealth, string> = {
+  checking:    "text-brand-muted",
+  healthy:     "text-green-400",
+  degraded:    "text-brand-gold",
+  unreachable: "text-red-400",
+};
+
+const STATUS_LABEL: Record<ServiceHealth, string> = {
+  checking:    "Checking…",
+  healthy:     "Healthy",
+  degraded:    "Degraded",
+  unreachable: "Unreachable",
+};
+
+function ServiceCard({ name, state }: { name: string; state: ServiceState }) {
+  return (
+    <div className="rounded-xl border border-brand-border bg-brand-surface px-5 py-4">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-brand-text">{name}</span>
+        <span className={`flex items-center gap-2 text-xs font-medium ${STATUS_COLOR[state.status]}`}>
+          <span className={`h-2 w-2 rounded-full ${STATUS_DOT[state.status]}`} />
+          {STATUS_LABEL[state.status]}
+        </span>
+      </div>
+      {state.detail && (
+        <p className="mt-1.5 text-xs text-brand-muted">{state.detail}</p>
+      )}
     </div>
   );
 }
+
+function SystemTab() {
+  const { workflow, agent, stats, refresh } = useHealth();
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-brand-muted">Live status of all platform services.</p>
+        <button
+          onClick={refresh}
+          className="text-xs text-brand-muted transition-colors hover:text-brand-cyan"
+        >
+          Refresh
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ServiceCard name="workflow-service" state={workflow} />
+        <ServiceCard name="agent-service" state={agent} />
+        <ServiceCard name="stats-service" state={stats} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Shared sub-components ────────────────────────────────────────────────────
 
 function SortTh({
   field,
