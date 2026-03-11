@@ -23,6 +23,11 @@ export function QueryInput({
 }: QueryInputProps) {
   const ref = useRef<HTMLTextAreaElement>(null);
 
+  // Refocus after streaming ends
+  useEffect(() => {
+    if (!isStreaming) ref.current?.focus();
+  }, [isStreaming]);
+
   // Auto-resize
   useEffect(() => {
     const el = ref.current;
