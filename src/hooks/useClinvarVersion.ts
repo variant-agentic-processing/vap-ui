@@ -11,7 +11,7 @@ export function useClinvarVersion(): { data: ClinvarVersion | null; loading: boo
   useEffect(() => {
     getClinvarVersion()
       .then(setData)
-      .catch(() => setData({ loaded_version: null, completed_at: null }))
+      .catch(() => setData({ loaded_version: null, completed_at: null, last_run_at: null }))
       .finally(() => setLoading(false));
   }, []);
 

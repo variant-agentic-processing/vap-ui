@@ -5,13 +5,10 @@ import { PipelineDetailModal } from "@/components/PipelineDetailModal";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SubmitPipelineModal } from "@/components/SubmitPipelineModal";
 import { usePipelines } from "@/hooks/usePipelines";
+import { useHealth, type ServiceHealth, type ServiceState, type ClinvarState } from "@/hooks/useHealth";
+import { AgentPanel } from "@/components/AgentPanel";
 import { formatDate, formatRuntime } from "@/lib/utils";
-import type { Pipeline, PipelineStatus, PipelineType } from "@/types/api";
-
-const TYPE_LABEL: Record<PipelineType, string> = {
-  vcf_ingest: "VCF Ingest",
-  clinvar_refresh: "ClinVar Refresh",
-};
+import type { Pipeline, PipelineStatus } from "@/types/api";
 
 const STATUS_FILTERS: Array<{ label: string; value: PipelineStatus | undefined }> = [
   { label: "All",       value: undefined },
@@ -20,7 +17,7 @@ const STATUS_FILTERS: Array<{ label: string; value: PipelineStatus | undefined }
   { label: "Failed",    value: "failed" },
 ];
 
-type SortField = "type" | "status" | "individual_id" | "started_at" | "runtime_minutes";
+type SortField = "status" | "individual_id" | "started_at" | "runtime_minutes";
 type SortDir   = "asc" | "desc";
 
 function sortPipelines(pipelines: Pipeline[], field: SortField, dir: SortDir): Pipeline[] {
@@ -29,11 +26,10 @@ function sortPipelines(pipelines: Pipeline[], field: SortField, dir: SortDir): P
     let bv: string | number | null;
 
     switch (field) {
-      case "type":           av = a.type;             bv = b.type;             break;
-      case "status":         av = a.status;           bv = b.status;           break;
-      case "individual_id":  av = a.individual_id;    bv = b.individual_id;    break;
-      case "started_at":     av = a.started_at ?? a.created_at; bv = b.started_at ?? b.created_at; break;
-      case "runtime_minutes": av = a.runtime_minutes; bv = b.runtime_minutes;  break;
+      case "status":          av = a.status;           bv = b.status;           break;
+      case "individual_id":   av = a.individual_id;    bv = b.individual_id;    break;
+      case "started_at":      av = a.started_at ?? a.created_at; bv = b.started_at ?? b.created_at; break;
+      case "runtime_minutes": av = a.runtime_minutes;  bv = b.runtime_minutes;  break;
     }
 
     if (av === null && bv === null) return 0;
@@ -45,7 +41,57 @@ function sortPipelines(pipelines: Pipeline[], field: SortField, dir: SortDir): P
   });
 }
 
-export default function PipelinesPage() {
+type PageTab = "variants" | "clinvar" | "system";
+
+const TAB_LABELS: Record<PageTab, string> = {
+  variants: "Variant Ingestion",
+  clinvar:  "ClinVar",
+  system:   "System Status",
+};
+
+export default function ToolsPage() {
+  const [tab, setTab] = useState<PageTab>("variants");
+
+  return (
+    <div>
+      <AgentPanel subtitle="Ask Varis about pipelines" />
+
+      {/* Page header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-brand-text">Tools</h1>
+        <p className="mt-1 text-sm text-brand-muted">
+          Pipeline management and system status.
+        </p>
+      </div>
+
+      {/* Top-level tabs */}
+      <div className="mb-6 flex items-center gap-1 border-b border-brand-border">
+        {(["variants", "clinvar", "system"] as PageTab[]).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={[
+              "px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px",
+              tab === t
+                ? "border-brand-cyan text-brand-cyan"
+                : "border-transparent text-brand-muted hover:text-brand-text",
+            ].join(" ")}
+          >
+            {TAB_LABELS[t]}
+          </button>
+        ))}
+      </div>
+
+      {tab === "variants" && <VariantsTab />}
+      {tab === "clinvar"  && <ClinvarPipelinesTab />}
+      {tab === "system"   && <SystemTab />}
+    </div>
+  );
+}
+
+// ─── Variants tab ─────────────────────────────────────────────────────────────
+
+function VariantsTab() {
   const [statusFilter, setStatusFilter] = useState<PipelineStatus | undefined>();
   const [showModal,    setShowModal]    = useState(false);
   const [selectedId,   setSelectedId]  = useState<string | null>(null);
@@ -53,118 +99,378 @@ export default function PipelinesPage() {
   const [sortDir,      setSortDir]     = useState<SortDir>("desc");
 
   const queryParams = useMemo(
-    () => (statusFilter ? { status: statusFilter, limit: 50 } : { limit: 50 }),
+    () => ({ type: "vcf_ingest" as const, ...(statusFilter ? { status: statusFilter } : {}), limit: 50 }),
     [statusFilter],
   );
   const { pipelines, total, isLoading, error, submit, cancel } = usePipelines(queryParams);
-
-  const sorted = useMemo(
-    () => sortPipelines(pipelines, sortField, sortDir),
-    [pipelines, sortField, sortDir],
-  );
+  const sorted = useMemo(() => sortPipelines(pipelines, sortField, sortDir), [pipelines, sortField, sortDir]);
 
   function handleSort(field: SortField) {
-    if (field === sortField) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortField(field);
-      setSortDir(field === "started_at" ? "desc" : "asc");
-    }
+    if (field === sortField) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortField(field); setSortDir(field === "started_at" ? "desc" : "asc"); }
   }
 
   return (
-    <div>
-      {/* Header */}
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-brand-text">Pipelines</h1>
-          <p className="mt-1 text-sm text-brand-muted">
-            Submit and monitor VCF ingest and ClinVar refresh pipelines.
-          </p>
-        </div>
+    <>
+      <div className="mb-4 flex items-center justify-between">
+        <StatusFilterBar value={statusFilter} onChange={setStatusFilter} total={total} isLoading={isLoading} />
         <button
           onClick={() => setShowModal(true)}
           className="rounded-lg bg-brand-cyan px-4 py-2 text-sm font-semibold text-brand-navy transition-opacity hover:opacity-90"
         >
-          Submit Pipeline
+          Submit Ingest
         </button>
       </div>
 
-      {/* Status filter tabs */}
-      <div className="mb-4 flex items-center gap-1">
-        {STATUS_FILTERS.map(({ label, value }) => (
-          <button
-            key={label}
-            onClick={() => setStatusFilter(value)}
-            className={[
-              "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-              statusFilter === value
-                ? "bg-brand-border text-brand-cyan"
-                : "text-brand-muted hover:bg-brand-border/50 hover:text-brand-text",
-            ].join(" ")}
-          >
-            {label}
-          </button>
-        ))}
-        {!isLoading && (
-          <span className="ml-2 text-xs text-brand-muted">{total} total</span>
-        )}
-      </div>
-
-      {/* Table */}
-      <div className="rounded-xl border border-brand-border bg-brand-surface overflow-hidden max-h-[calc(100vh-220px)] overflow-y-auto">
-        {error ? (
-          <div className="p-8 text-center text-sm text-red-400">{error}</div>
-        ) : isLoading ? (
-          <div className="p-8 text-center text-sm text-brand-muted">Loading…</div>
-        ) : pipelines.length === 0 ? (
-          <div className="p-12 text-center">
-            <p className="text-sm text-brand-muted">No pipelines yet.</p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="mt-2 text-xs text-brand-cyan hover:underline"
-            >
-              Submit your first pipeline →
-            </button>
-          </div>
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-brand-surface z-10">
-              <tr className="border-b border-brand-border text-left">
-                <SortTh field="type"            active={sortField} dir={sortDir} onSort={handleSort}>Type</SortTh>
-                <SortTh field="status"          active={sortField} dir={sortDir} onSort={handleSort}>Status</SortTh>
-                <SortTh field="individual_id"   active={sortField} dir={sortDir} onSort={handleSort}>Individual</SortTh>
-                <SortTh field="started_at"      active={sortField} dir={sortDir} onSort={handleSort}>Start Time</SortTh>
-                <SortTh field="runtime_minutes" active={sortField} dir={sortDir} onSort={handleSort}>Runtime</SortTh>
-                <th className="px-4 py-3 text-xs font-medium text-brand-muted">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-brand-border/50">
-              {sorted.map((p) => (
-                <PipelineRow
-                  key={p.id}
-                  pipeline={p}
-                  onView={() => setSelectedId(p.id)}
-                  onCancel={() => void cancel(p.id)}
-                />
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <PipelineTable
+        sorted={sorted}
+        error={error}
+        isLoading={isLoading}
+        showIndividual
+        sortField={sortField}
+        sortDir={sortDir}
+        onSort={handleSort}
+        onView={setSelectedId}
+        onCancel={(id) => void cancel(id)}
+        onSubmitClick={() => setShowModal(true)}
+      />
 
       {showModal && (
         <SubmitPipelineModal
+          lockedType="vcf_ingest"
           onClose={() => setShowModal(false)}
           onSubmit={async (body) => { await submit(body); }}
         />
       )}
-      {selectedId && (
-        <PipelineDetailModal id={selectedId} onClose={() => setSelectedId(null)} />
+      {selectedId && <PipelineDetailModal id={selectedId} onClose={() => setSelectedId(null)} />}
+    </>
+  );
+}
+
+// ─── ClinVar pipelines tab ────────────────────────────────────────────────────
+
+function ClinvarPipelinesTab() {
+  const [statusFilter, setStatusFilter] = useState<PipelineStatus | undefined>();
+  const [showModal,    setShowModal]    = useState(false);
+  const [selectedId,   setSelectedId]  = useState<string | null>(null);
+  const [sortField,    setSortField]   = useState<SortField>("started_at");
+  const [sortDir,      setSortDir]     = useState<SortDir>("desc");
+
+  const queryParams = useMemo(
+    () => ({ type: "clinvar_refresh" as const, ...(statusFilter ? { status: statusFilter } : {}), limit: 50 }),
+    [statusFilter],
+  );
+  const { pipelines, total, isLoading, error, submit, cancel } = usePipelines(queryParams);
+  const sorted = useMemo(() => sortPipelines(pipelines, sortField, sortDir), [pipelines, sortField, sortDir]);
+
+  function handleSort(field: SortField) {
+    if (field === sortField) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortField(field); setSortDir(field === "started_at" ? "desc" : "asc"); }
+  }
+
+  return (
+    <>
+      <div className="mb-4 flex items-center justify-between">
+        <StatusFilterBar value={statusFilter} onChange={setStatusFilter} total={total} isLoading={isLoading} />
+        <button
+          onClick={() => setShowModal(true)}
+          className="rounded-lg bg-brand-cyan px-4 py-2 text-sm font-semibold text-brand-navy transition-opacity hover:opacity-90"
+        >
+          Submit Refresh
+        </button>
+      </div>
+
+      <PipelineTable
+        sorted={sorted}
+        error={error}
+        isLoading={isLoading}
+        showIndividual={false}
+        sortField={sortField}
+        sortDir={sortDir}
+        onSort={handleSort}
+        onView={setSelectedId}
+        onCancel={(id) => void cancel(id)}
+        onSubmitClick={() => setShowModal(true)}
+      />
+
+      {showModal && (
+        <SubmitPipelineModal
+          lockedType="clinvar_refresh"
+          onClose={() => setShowModal(false)}
+          onSubmit={async (body) => { await submit(body); }}
+        />
+      )}
+      {selectedId && <PipelineDetailModal id={selectedId} onClose={() => setSelectedId(null)} />}
+    </>
+  );
+}
+
+// ─── Shared pipeline table ────────────────────────────────────────────────────
+
+function StatusFilterBar({
+  value,
+  onChange,
+  total,
+  isLoading,
+}: {
+  value: PipelineStatus | undefined;
+  onChange: (v: PipelineStatus | undefined) => void;
+  total: number;
+  isLoading: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-1">
+      {STATUS_FILTERS.map(({ label, value: v }) => (
+        <button
+          key={label}
+          onClick={() => onChange(v)}
+          className={[
+            "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+            value === v
+              ? "bg-brand-border text-brand-cyan"
+              : "text-brand-muted hover:bg-brand-border/50 hover:text-brand-text",
+          ].join(" ")}
+        >
+          {label}
+        </button>
+      ))}
+      {!isLoading && <span className="ml-2 text-xs text-brand-muted">{total} total</span>}
+    </div>
+  );
+}
+
+function PipelineTable({
+  sorted,
+  error,
+  isLoading,
+  showIndividual,
+  sortField,
+  sortDir,
+  onSort,
+  onView,
+  onCancel,
+  onSubmitClick,
+}: {
+  sorted: Pipeline[];
+  error: string | null;
+  isLoading: boolean;
+  showIndividual: boolean;
+  sortField: SortField;
+  sortDir: SortDir;
+  onSort: (f: SortField) => void;
+  onView: (id: string) => void;
+  onCancel: (id: string) => void;
+  onSubmitClick: () => void;
+}) {
+  return (
+    <div className="rounded-xl border border-brand-border bg-brand-surface overflow-hidden max-h-[calc(100vh-280px)] overflow-y-auto">
+      {error ? (
+        <div className="p-8 text-center text-sm text-red-400">{error}</div>
+      ) : isLoading ? (
+        <div className="p-8 text-center text-sm text-brand-muted">Loading…</div>
+      ) : sorted.length === 0 ? (
+        <div className="p-12 text-center">
+          <p className="text-sm text-brand-muted">No pipelines yet.</p>
+          <button onClick={onSubmitClick} className="mt-2 text-xs text-brand-cyan hover:underline">
+            Submit your first pipeline →
+          </button>
+        </div>
+      ) : (
+        <table className="w-full text-sm">
+          <thead className="sticky top-0 bg-brand-surface z-10">
+            <tr className="border-b border-brand-border text-left">
+              <SortTh field="status"          active={sortField} dir={sortDir} onSort={onSort}>Status</SortTh>
+              {showIndividual && (
+                <SortTh field="individual_id" active={sortField} dir={sortDir} onSort={onSort}>Individual</SortTh>
+              )}
+              <SortTh field="started_at"      active={sortField} dir={sortDir} onSort={onSort}>Start Time</SortTh>
+              <SortTh field="runtime_minutes" active={sortField} dir={sortDir} onSort={onSort}>Runtime</SortTh>
+              <th className="px-4 py-3 text-xs font-medium text-brand-muted">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-brand-border/50">
+            {sorted.map((p) => (
+              <PipelineRow
+                key={p.id}
+                pipeline={p}
+                showIndividual={showIndividual}
+                onView={() => onView(p.id)}
+                onCancel={() => onCancel(p.id)}
+              />
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   );
 }
+
+// ─── System status tab ────────────────────────────────────────────────────────
+
+const STATUS_DOT: Record<ServiceHealth, string> = {
+  checking:    "bg-brand-muted animate-pulse",
+  healthy:     "bg-green-400",
+  degraded:    "bg-brand-gold",
+  unreachable: "bg-red-500",
+};
+
+const STATUS_COLOR: Record<ServiceHealth, string> = {
+  checking:    "text-brand-muted",
+  healthy:     "text-green-400",
+  degraded:    "text-brand-gold",
+  unreachable: "text-red-400",
+};
+
+const STATUS_LABEL: Record<ServiceHealth, string> = {
+  checking:    "Checking…",
+  healthy:     "Healthy",
+  degraded:    "Degraded",
+  unreachable: "Unreachable",
+};
+
+function ServiceCard({ name, state }: { name: string; state: ServiceState }) {
+  return (
+    <div className="rounded-xl border border-brand-border bg-brand-surface px-5 py-4">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-brand-text">{name}</span>
+        <span className={`flex items-center gap-2 text-xs font-medium ${STATUS_COLOR[state.status]}`}>
+          <span className={`h-2 w-2 rounded-full ${STATUS_DOT[state.status]}`} />
+          {STATUS_LABEL[state.status]}
+        </span>
+      </div>
+      {state.detail && (
+        <p className="mt-1.5 text-xs text-brand-muted">{state.detail}</p>
+      )}
+    </div>
+  );
+}
+
+function SystemTab() {
+  const { workflow, agent, mcp, stats, sample, clinvar, refresh } = useHealth();
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-brand-muted">Live status of all platform services.</p>
+        <button
+          onClick={refresh}
+          className="text-xs text-brand-muted transition-colors hover:text-brand-cyan"
+        >
+          Refresh
+        </button>
+      </div>
+
+      {/* Services */}
+      <div>
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-muted">Services</h3>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ServiceCard name="workflow-service" state={workflow} />
+          <ServiceCard name="agent-service" state={agent} />
+          <ServiceCard name="variant-mcp-server" state={mcp} />
+          <ServiceCard name="stats-service" state={stats} />
+          <ServiceCard name="sample-service" state={sample} />
+        </div>
+      </div>
+
+      {/* Data freshness */}
+      <div>
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-muted">Data</h3>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <ClinvarCard clinvar={clinvar} />
+          <StatsComputedCard state={stats} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function parseVersionDate(version: string): Date | null {
+  // Handle YYYYMMDD format (e.g. "20250303")
+  if (/^\d{8}$/.test(version)) {
+    return new Date(
+      parseInt(version.slice(0, 4)),
+      parseInt(version.slice(4, 6)) - 1,
+      parseInt(version.slice(6, 8)),
+    );
+  }
+  // Handle YYYY-MM-DD — parse as local midnight to avoid UTC-offset display shift
+  const isoDate = /^(\d{4})-(\d{2})-(\d{2})$/.exec(version);
+  if (isoDate?.[1] && isoDate[2] && isoDate[3]) {
+    return new Date(parseInt(isoDate[1]), parseInt(isoDate[2]) - 1, parseInt(isoDate[3]));
+  }
+  const d = new Date(version);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function ClinvarCard({ clinvar }: { clinvar: ClinvarState | null }) {
+  const isChecking = clinvar === null;
+  const isStale = clinvar?.isStale ?? false;
+
+  const displayDate = (() => {
+    if (!clinvar?.loadedAt && !clinvar?.version) return null;
+    const loaded = clinvar.loadedAt ? new Date(clinvar.loadedAt) : null;
+    const version = clinvar.version ? parseVersionDate(clinvar.version) : null;
+    if (!loaded && !version) return null;
+    if (!loaded) return version;
+    if (!version) return loaded;
+    return version > loaded ? version : loaded;
+  })();
+
+  return (
+    <div className={[
+      "rounded-xl border px-5 py-4",
+      isStale ? "border-brand-gold/40 bg-brand-gold/5" : "border-brand-border bg-brand-surface",
+    ].join(" ")}>
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-brand-text">ClinVar</span>
+        {isChecking ? (
+          <span className="text-xs text-brand-muted">Checking…</span>
+        ) : isStale ? (
+          <span className="text-xs font-medium text-brand-gold">Stale</span>
+        ) : (
+          <span className="text-xs font-medium text-green-400">Current</span>
+        )}
+      </div>
+      {clinvar && (
+        <div className="mt-1.5 space-y-0.5">
+          <p className="text-xs text-brand-muted">
+            Version <span className="font-mono text-brand-text">{clinvar.version ?? "—"}</span>
+          </p>
+          {displayDate && (
+            <p className="text-xs text-brand-muted">
+              Last checked {displayDate.toLocaleDateString()}
+              {isStale && " · refresh recommended"}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatsComputedCard({ state }: { state: ServiceState }) {
+  return (
+    <div className="rounded-xl border border-brand-border bg-brand-surface px-5 py-4">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-brand-text">Dashboard Stats</span>
+        {state.status === "checking" ? (
+          <span className="text-xs text-brand-muted">Checking…</span>
+        ) : state.status === "unreachable" ? (
+          <span className="text-xs font-medium text-red-400">Unavailable</span>
+        ) : state.detail?.startsWith("Not") ? (
+          <span className="text-xs font-medium text-brand-gold">Not computed</span>
+        ) : (
+          <span className="text-xs font-medium text-green-400">Ready</span>
+        )}
+      </div>
+      {state.detail && state.status !== "unreachable" && (
+        <p className="mt-1.5 text-xs text-brand-muted">{state.detail}</p>
+      )}
+    </div>
+  );
+}
+
+// ─── Shared sub-components ────────────────────────────────────────────────────
 
 function SortTh({
   field,
@@ -200,10 +506,12 @@ function SortTh({
 
 function PipelineRow({
   pipeline: p,
+  showIndividual,
   onView,
   onCancel,
 }: {
   pipeline: Pipeline;
+  showIndividual: boolean;
   onView: () => void;
   onCancel: () => void;
 }) {
@@ -212,15 +520,14 @@ function PipelineRow({
 
   return (
     <tr className="group transition-colors hover:bg-brand-border/20">
-      <td className="px-4 py-3 text-xs font-medium text-brand-text">
-        {TYPE_LABEL[p.type]}
-      </td>
       <td className="px-4 py-3">
         <StatusBadge status={p.status} size="sm" />
       </td>
-      <td className="px-4 py-3 text-xs text-brand-muted">
-        {p.individual_id ?? <span className="text-brand-border">—</span>}
-      </td>
+      {showIndividual && (
+        <td className="px-4 py-3 text-xs text-brand-muted">
+          {p.individual_id ?? <span className="text-brand-border">—</span>}
+        </td>
+      )}
       <td className="px-4 py-3 text-xs text-brand-muted">
         {formatDate(startTime)}
       </td>

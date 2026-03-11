@@ -9,6 +9,7 @@ interface QueryInputProps {
   onCancel: () => void;
   isStreaming: boolean;
   placeholder?: string;
+  autoFocus?: boolean;
 }
 
 export function QueryInput({
@@ -18,8 +19,14 @@ export function QueryInput({
   onCancel,
   isStreaming,
   placeholder = "Ask a question about the variant dataset…",
+  autoFocus = false,
 }: QueryInputProps) {
   const ref = useRef<HTMLTextAreaElement>(null);
+
+  // Refocus after streaming ends
+  useEffect(() => {
+    if (!isStreaming) ref.current?.focus();
+  }, [isStreaming]);
 
   // Auto-resize
   useEffect(() => {
@@ -44,6 +51,7 @@ export function QueryInput({
       ].join(" ")}>
         <textarea
           ref={ref}
+          autoFocus={autoFocus}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}

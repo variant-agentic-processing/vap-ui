@@ -4,6 +4,7 @@ import { useCallback, useDeferredValue, useMemo, useState } from "react";
 import Link from "next/link";
 import { createPipeline } from "@/lib/workflow-client";
 import { useSamples } from "@/hooks/useSamples";
+import { AgentPanel } from "@/components/AgentPanel";
 import type { Sample } from "@/lib/sample-client";
 
 const SUPERPOPULATIONS = [
@@ -77,6 +78,7 @@ export default function SamplesPage() {
 
   return (
     <div className="space-y-6">
+      <AgentPanel subtitle="Ask Varis about the cohort" />
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold text-brand-text">Samples</h1>
