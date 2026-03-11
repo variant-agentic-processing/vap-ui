@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useClinvarVersion } from "@/hooks/useClinvarVersion";
+import { AgentPanel } from "@/components/AgentPanel";
 
 export default function DashboardPage() {
   const [geneInput, setGeneInput] = useState("");
@@ -34,6 +35,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      <AgentPanel subtitle="Ask about the cohort" />
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-brand-text">Dashboard</h1>

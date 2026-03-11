@@ -5,8 +5,23 @@ import Link from "next/link";
 import { useIndividualVariants } from "@/hooks/useIndividualVariants";
 import { useSample } from "@/hooks/useSample";
 import { useClinvarVersion } from "@/hooks/useClinvarVersion";
-import { IndividualAgentPanel } from "@/components/IndividualAgentPanel";
+import { AgentPanel } from "@/components/AgentPanel";
+import type { Sample } from "@/lib/sample-client";
 import type { Variant } from "@/lib/cohort-client";
+
+function buildContext(individualId: string, sample: Sample | null): string {
+  const parts = [`The user is viewing individual ${individualId}.`];
+  if (sample) {
+    const pop = [sample.population_name, sample.population_code ? `(${sample.population_code})` : null]
+      .filter(Boolean).join(" ");
+    const superpop = [sample.superpopulation_name, sample.superpopulation_code ? `(${sample.superpopulation_code})` : null]
+      .filter(Boolean).join(" ");
+    const details = [sample.sex, pop, superpop].filter(Boolean).join(", ");
+    if (details) parts.push(`Individual details: ${details}.`);
+  }
+  parts.push("Focus answers on this individual unless the user explicitly asks about others.");
+  return parts.join(" ");
+}
 
 const SIG_COLORS: Record<string, string> = {
   Pathogenic: "text-red-400",
@@ -57,7 +72,11 @@ export default function IndividualPage({
 
   return (
     <div className="space-y-6">
-      <IndividualAgentPanel individualId={id} sample={sample ?? null} />
+      <AgentPanel
+        context={buildContext(id, sample ?? null)}
+        title={sample?.display_name ?? id}
+        subtitle="Ask about this individual"
+      />
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <Link href="/samples" className="text-xs text-brand-muted hover:text-brand-text transition-colors">
