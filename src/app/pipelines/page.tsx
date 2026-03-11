@@ -365,7 +365,7 @@ function SystemTab() {
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-muted">Services</h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <ServiceCard name="workflow-service" state={workflow} />
-          <ServiceCard name="agent-service" state={agent} />
+          <ServiceCard name="Varis" state={agent} />
           <ServiceCard name="variant-mcp-server" state={mcp} />
           <ServiceCard name="stats-service" state={stats} />
           <ServiceCard name="sample-service" state={sample} />

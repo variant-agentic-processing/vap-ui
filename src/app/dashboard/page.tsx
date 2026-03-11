@@ -1,14 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useClinvarVersion } from "@/hooks/useClinvarVersion";
 import { AgentPanel } from "@/components/AgentPanel";
 
+const WARMUP_ENDPOINTS = [
+  "/api/agent/health",
+  "/api/mcp/health",
+  "/api/stats/health",
+  "/api/samples/health",
+  "/api/workflow/system/status",
+];
+
 export default function DashboardPage() {
   const [geneInput, setGeneInput] = useState("");
   const [activeGenes, setActiveGenes] = useState<string[]>([]);
+
+  useEffect(() => {
+    for (const url of WARMUP_ENDPOINTS) {
+      void fetch(url, { priority: "low" } as RequestInit).catch(() => undefined);
+    }
+  }, []);
 
   const { cohortSummary, topGenes, consequences, individuals, loading, error } =
     useDashboard(activeGenes);

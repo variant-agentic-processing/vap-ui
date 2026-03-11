@@ -177,8 +177,20 @@ const markdownComponents: React.ComponentProps<typeof Markdown>["components"] = 
   ),
 };
 
+const DISCLAIMER = "This is a research prototype using public 1000 Genomes data. Not for clinical use.";
+
+function splitDisclaimer(text: string): { body: string; disclaimer: string | null } {
+  const idx = text.lastIndexOf(DISCLAIMER);
+  if (idx === -1) return { body: text, disclaimer: null };
+  return {
+    body: text.slice(0, idx).trimEnd(),
+    disclaimer: DISCLAIMER,
+  };
+}
+
 function AnswerBlock({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
+  const { body, disclaimer } = splitDisclaimer(text);
 
   function copy() {
     void navigator.clipboard.writeText(text).then(() => {
@@ -206,8 +218,13 @@ function AnswerBlock({ text }: { text: string }) {
         prose-a:text-brand-cyan
         prose-blockquote:border-brand-cyan prose-blockquote:text-brand-muted
         prose-hr:border-brand-border">
-        <Markdown components={markdownComponents}>{text}</Markdown>
+        <Markdown components={markdownComponents}>{body}</Markdown>
       </div>
+      {disclaimer && (
+        <p className="mt-3 border-t border-brand-border/40 pt-2.5 text-xs text-brand-muted/60 italic">
+          {disclaimer}
+        </p>
+      )}
     </div>
   );
 }

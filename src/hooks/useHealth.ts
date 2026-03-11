@@ -95,7 +95,7 @@ export function useHealth(): HealthState {
 
     if (agentResult.status === "fulfilled") {
       const a = agentResult.value;
-      setAgent({ status: "healthy", detail: `${a.tools} tools · ${a.name ?? "Varis"}` });
+      setAgent({ status: "healthy", detail: `${a.tools} tools` });
     } else {
       setAgent({ status: "unreachable" });
     }
