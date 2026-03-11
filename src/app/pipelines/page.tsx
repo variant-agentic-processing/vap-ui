@@ -5,6 +5,7 @@ import { PipelineDetailModal } from "@/components/PipelineDetailModal";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SubmitPipelineModal } from "@/components/SubmitPipelineModal";
 import { usePipelines } from "@/hooks/usePipelines";
+import { AgentPanel } from "@/components/AgentPanel";
 import { formatDate, formatRuntime } from "@/lib/utils";
 import type { Pipeline, PipelineStatus, PipelineType } from "@/types/api";
 
@@ -74,6 +75,7 @@ export default function PipelinesPage() {
 
   return (
     <div>
+      <AgentPanel subtitle="Ask about pipelines or request a run" />
       {/* Header */}
       <div className="mb-6 flex items-start justify-between">
         <div>
