@@ -75,7 +75,7 @@ export default function IndividualPage({
       <AgentPanel
         context={buildContext(id, sample ?? null)}
         title={sample?.display_name ?? id}
-        subtitle="Ask about this individual"
+        subtitle="Ask Locus about this individual"
       />
       {/* Header */}
       <div className="flex items-center justify-between gap-4">

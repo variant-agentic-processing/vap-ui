@@ -97,6 +97,7 @@ export interface Message {
 
 export interface AgentHealth {
   status: string;
+  name?: string;
   tools: number;
 }
 

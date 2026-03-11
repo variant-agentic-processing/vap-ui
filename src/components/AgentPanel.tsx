@@ -6,13 +6,15 @@ import { ConversationThread } from "./ConversationThread";
 import { useAgentQuery } from "@/hooks/useAgentQuery";
 import { useStreamTimer } from "@/hooks/useStreamTimer";
 
+const AGENT_NAME = "Locus";
+
 interface AgentPanelProps {
   context?: string;
   title?: string;
   subtitle?: string;
 }
 
-export function AgentPanel({ context, title = "Agent", subtitle = "Ask a question" }: AgentPanelProps) {
+export function AgentPanel({ context, title = AGENT_NAME, subtitle = "Ask a question" }: AgentPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const { isStreaming, turns, activeTurn, ask, cancel, reset } = useAgentQuery();

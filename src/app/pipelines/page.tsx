@@ -75,7 +75,7 @@ export default function PipelinesPage() {
 
   return (
     <div>
-      <AgentPanel subtitle="Ask about pipelines or request a run" />
+      <AgentPanel subtitle="Ask Locus about pipelines" />
       {/* Header */}
       <div className="mb-6 flex items-start justify-between">
         <div>

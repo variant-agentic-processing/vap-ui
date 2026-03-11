@@ -78,7 +78,7 @@ export default function SamplesPage() {
 
   return (
     <div className="space-y-6">
-      <AgentPanel subtitle="Ask about the cohort" />
+      <AgentPanel subtitle="Ask Locus about the cohort" />
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold text-brand-text">Samples</h1>

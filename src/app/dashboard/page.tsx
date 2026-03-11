@@ -35,7 +35,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <AgentPanel subtitle="Ask about the cohort" />
+      <AgentPanel subtitle="Ask Locus about the cohort" />
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-brand-text">Dashboard</h1>
