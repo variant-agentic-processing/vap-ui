@@ -438,7 +438,7 @@ function ClinvarCard({ clinvar }: { clinvar: ClinvarState | null }) {
           </p>
           {displayDate && (
             <p className="text-xs text-brand-muted">
-              Loaded {displayDate.toLocaleDateString()}
+              Last checked {displayDate.toLocaleDateString()}
               {isStale && " · refresh recommended"}
             </p>
           )}

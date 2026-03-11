@@ -78,6 +78,7 @@ export interface SystemStatus {
 export interface ClinvarVersion {
   loaded_version: string | null;
   completed_at: string | null;
+  last_run_at: string | null;
 }
 
 export interface DashboardStats {

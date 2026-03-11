@@ -129,10 +129,14 @@ export function useHealth(): HealthState {
 
     if (clinvarResult.status === "fulfilled") {
       const cv = clinvarResult.value;
+      // last_run_at = last completed clinvar_refresh (including no-ops)
+      // completed_at = last time new data was actually loaded
+      // Use last_run_at for staleness/display; fall back to completed_at for older deploys
+      const checkedAt = cv.last_run_at ?? cv.completed_at;
       setClinvar({
         version: cv.loaded_version,
-        loadedAt: cv.completed_at,
-        isStale: isClinvarStale(cv.completed_at),
+        loadedAt: checkedAt,
+        isStale: isClinvarStale(checkedAt),
       });
     } else {
       setClinvar(null);
