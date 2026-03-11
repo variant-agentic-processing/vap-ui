@@ -1,10 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Markdown from "react-markdown";
 import { ToolCallStep } from "./ToolCallStep";
 import type { ConversationTurn } from "@/hooks/useAgentQuery";
 import type { StreamStatus } from "@/hooks/useStreamTimer";
+
+function VarisAvatar() {
+  return (
+    <div className="shrink-0 mt-0.5">
+      <Image
+        src="/varis.jpg"
+        alt="Varis"
+        width={28}
+        height={28}
+        className="rounded-full object-cover ring-1 ring-brand-border"
+      />
+    </div>
+  );
+}
 
 export type QueryEntry = ConversationTurn & {
   isStreaming?: boolean;
@@ -25,51 +40,57 @@ export function QueryResult({ entry }: { entry: QueryEntry }) {
         </div>
       </div>
 
-      {/* Tool calls (collapsible) */}
-      {hasSteps && (
-        <div className="rounded-xl border border-brand-border/50 bg-brand-surface/50">
-          <button
-            onClick={() => setStepsOpen((o) => !o)}
-            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-brand-muted hover:text-brand-text transition-colors"
-          >
-            <span className="text-brand-border">{stepsOpen ? "▾" : "▸"}</span>
-            <span>
-              {entry.steps.length} tool {entry.steps.length === 1 ? "call" : "calls"}
-            </span>
-            {entry.isStreaming && (
-              <span className="ml-auto h-1.5 w-1.5 rounded-full bg-brand-cyan animate-pulse" />
-            )}
-          </button>
-          {stepsOpen && (
-            <div className="border-t border-brand-border/50 py-1">
-              {entry.steps.map((step, i) => (
-                <ToolCallStep key={i} step={step} />
-              ))}
+      {/* Varis response */}
+      <div className="flex items-start gap-2.5">
+        <VarisAvatar />
+        <div className="min-w-0 flex-1 space-y-2">
+          {/* Tool calls (collapsible) */}
+          {hasSteps && (
+            <div className="rounded-xl border border-brand-border/50 bg-brand-surface/50">
+              <button
+                onClick={() => setStepsOpen((o) => !o)}
+                className="flex w-full items-center gap-2 px-3 py-2 text-xs text-brand-muted hover:text-brand-text transition-colors"
+              >
+                <span className="text-brand-border">{stepsOpen ? "▾" : "▸"}</span>
+                <span>
+                  {entry.steps.length} tool {entry.steps.length === 1 ? "call" : "calls"}
+                </span>
+                {entry.isStreaming && (
+                  <span className="ml-auto h-1.5 w-1.5 rounded-full bg-brand-cyan animate-pulse" />
+                )}
+              </button>
+              {stepsOpen && (
+                <div className="border-t border-brand-border/50 py-1">
+                  {entry.steps.map((step, i) => (
+                    <ToolCallStep key={i} step={step} />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Streaming indicator */}
+          {entry.isStreaming && (
+            <StreamingStatus
+              status={entry.streamStatus ?? "thinking"}
+              elapsed={entry.elapsed ?? 0}
+              hasSteps={hasSteps}
+            />
+          )}
+
+          {/* Answer */}
+          {entry.answer && (
+            <AnswerBlock text={entry.answer} />
+          )}
+
+          {/* Error */}
+          {entry.error && (
+            <div className="rounded-xl border border-red-800/40 bg-red-900/10 px-4 py-3 text-sm text-red-400">
+              {entry.error}
             </div>
           )}
         </div>
-      )}
-
-      {/* Streaming indicator */}
-      {entry.isStreaming && (
-        <StreamingStatus
-          status={entry.streamStatus ?? "thinking"}
-          elapsed={entry.elapsed ?? 0}
-          hasSteps={hasSteps}
-        />
-      )}
-
-      {/* Answer */}
-      {entry.answer && (
-        <AnswerBlock text={entry.answer} />
-      )}
-
-      {/* Error */}
-      {entry.error && (
-        <div className="rounded-xl border border-red-800/40 bg-red-900/10 px-4 py-3 text-sm text-red-400">
-          {entry.error}
-        </div>
-      )}
+      </div>
     </div>
   );
 }
