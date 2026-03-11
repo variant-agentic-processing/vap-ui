@@ -6,7 +6,7 @@ import { ConversationThread } from "./ConversationThread";
 import { useAgentQuery } from "@/hooks/useAgentQuery";
 import { useStreamTimer } from "@/hooks/useStreamTimer";
 
-const AGENT_NAME = "Locus";
+const AGENT_NAME = "Varis";
 
 interface AgentPanelProps {
   context?: string;
