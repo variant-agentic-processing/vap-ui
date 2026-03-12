@@ -88,6 +88,7 @@ export interface DashboardStats {
   consequences: { value: string; count: number }[];
   top_genes: { gene_symbol: string; variant_count: number; pathogenic_count: number }[];
   individuals: { individual_id: string; variant_count: number; pathogenic_count: number }[];
+  shared_pathogenic_genes?: { gene_symbol: string; individual_count: number; pathogenic_count: number }[];
 }
 
 // ─── Agent Service ───────────────────────────────────────────────────────────

@@ -12,12 +12,19 @@ import {
 } from "@/lib/cohort-client";
 import { getDashboardStats } from "@/lib/workflow-client";
 
+export interface SharedPathogenicGene {
+  gene_symbol: string;
+  individual_count: number;
+  pathogenic_count: number;
+}
+
 interface DashboardData {
   cohortSummary: CohortBucket[];
   consequences: CohortBucket[];
   topGenes: TopGene[];
   individuals: Individual[];
   totalVariants: number | null;
+  sharedPathogenicGenes: SharedPathogenicGene[];
   loading: boolean;
   error: string | null;
 }
@@ -28,6 +35,7 @@ export function useDashboard(): DashboardData {
   const [topGenes, setTopGenes] = useState<TopGene[]>([]);
   const [individuals, setIndividuals] = useState<Individual[]>([]);
   const [totalVariants, setTotalVariants] = useState<number | null>(null);
+  const [sharedPathogenicGenes, setSharedPathogenicGenes] = useState<SharedPathogenicGene[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,6 +50,7 @@ export function useDashboard(): DashboardData {
         setTopGenes(stats.top_genes);
         setIndividuals(stats.individuals);
         setTotalVariants(stats.total_variants ?? null);
+        setSharedPathogenicGenes(stats.shared_pathogenic_genes ?? []);
       })
       .catch(() => {
         // Cache miss or stats-service unavailable — fall back to live queries
@@ -64,5 +73,5 @@ export function useDashboard(): DashboardData {
       .finally(() => setLoading(false));
   }, []);
 
-  return { cohortSummary, consequences, topGenes, individuals, totalVariants, loading, error };
+  return { cohortSummary, consequences, topGenes, individuals, totalVariants, sharedPathogenicGenes, loading, error };
 }

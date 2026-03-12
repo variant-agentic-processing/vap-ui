@@ -21,7 +21,7 @@ export default function DashboardPage() {
     }
   }, []);
 
-  const { cohortSummary, topGenes, consequences, individuals, totalVariants, loading, error } =
+  const { cohortSummary, topGenes, consequences, individuals, totalVariants, sharedPathogenicGenes, loading, error } =
     useDashboard();
   const { data: clinvar, loading: clinvarLoading } = useClinvarVersion();
 
@@ -124,6 +124,36 @@ export default function DashboardPage() {
           )}
         </Section>
       </div>
+
+      {/* Shared pathogenic burden */}
+      {(loading || sharedPathogenicGenes.length > 0) && (
+        <Section title="Shared Pathogenic Burden">
+          {loading ? (
+            <LoadingRows />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-brand-border">
+                    <th className="pb-2 text-left font-semibold text-brand-cyan">Gene</th>
+                    <th className="pb-2 text-right font-semibold text-brand-cyan">Individuals</th>
+                    <th className="pb-2 text-right font-semibold text-brand-cyan">Pathogenic Variants</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-brand-border/40">
+                  {sharedPathogenicGenes.map((g) => (
+                    <tr key={g.gene_symbol} className="hover:bg-brand-border/20 transition-colors">
+                      <td className="py-2 font-mono text-brand-text">{g.gene_symbol}</td>
+                      <td className="py-2 text-right text-brand-gold">{g.individual_count}</td>
+                      <td className="py-2 text-right text-brand-muted">{g.pathogenic_count.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Section>
+      )}
 
       {/* Clinical significance breakdown */}
       <Section title="Clinical Significance">
