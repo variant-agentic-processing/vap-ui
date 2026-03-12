@@ -18,6 +18,7 @@ All routes are VPN-gated — no auth layer. Cloud Run internal ingress (`INGRESS
 - `genomic-pipeline` Artifact Registry repository exists
 - Node 20+ for local development
 - Python 3.11+ and Poetry for deploy tasks
+- [poethepoet](https://github.com/nat-n/poethepoet) — task runner (`pipx install poethepoet`)
 
 ## Setup
 
@@ -49,7 +50,7 @@ Open `http://localhost:3000`. The API routes proxy `/api/workflow/*`, `/api/agen
 Builds the Docker image via Cloud Build and pushes to Artifact Registry:
 
 ```bash
-poetry run poe build
+poe build
 ```
 
 ## Deploy
@@ -57,14 +58,14 @@ poetry run poe build
 First time only — log in and initialise the stack:
 
 ```bash
-poetry run poe login
-poetry run poe stack-init
+poe login
+poe stack-init
 ```
 
 Then deploy (and on all subsequent updates):
 
 ```bash
-poetry run poe deploy
+poe deploy
 ```
 
 Force a new revision when only the image changed (no config diff):
@@ -77,11 +78,11 @@ gcloud run services update vap-ui --image=us-central1-docker.pkg.dev/variant-pro
 
 | Task | Description |
 |------|-------------|
-| `poetry run poe build` | Build and push Docker image via Cloud Build |
-| `poetry run poe login` | Log into the Pulumi GCS backend |
-| `poetry run poe stack-init` | Initialise the Pulumi stack (first time only) |
-| `poetry run poe deploy` | Deploy or update the Cloud Run service via Pulumi |
-| `poetry run poe logs` | Tail Cloud Run logs |
+| `poe build` | Build and push Docker image via Cloud Build |
+| `poe login` | Log into the Pulumi GCS backend |
+| `poe stack-init` | Initialise the Pulumi stack (first time only) |
+| `poe deploy` | Deploy or update the Cloud Run service via Pulumi |
+| `poe logs` | Tail Cloud Run logs |
 
 ## npm scripts
 
