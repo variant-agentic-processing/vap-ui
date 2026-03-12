@@ -83,10 +83,12 @@ export interface ClinvarVersion {
 
 export interface DashboardStats {
   computed_at: string;
+  total_variants?: number;
   cohort_summary: { value: string; count: number }[];
   consequences: { value: string; count: number }[];
   top_genes: { gene_symbol: string; variant_count: number; pathogenic_count: number }[];
   individuals: { individual_id: string; variant_count: number; pathogenic_count: number }[];
+  shared_pathogenic_genes?: { gene_symbol: string; individual_count: number; pathogenic_count: number }[];
 }
 
 // ─── Agent Service ───────────────────────────────────────────────────────────

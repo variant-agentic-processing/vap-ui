@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useClinvarVersion } from "@/hooks/useClinvarVersion";
@@ -15,33 +15,17 @@ const WARMUP_ENDPOINTS = [
 ];
 
 export default function DashboardPage() {
-  const [geneInput, setGeneInput] = useState("");
-  const [activeGenes, setActiveGenes] = useState<string[]>([]);
-
   useEffect(() => {
     for (const url of WARMUP_ENDPOINTS) {
       void fetch(url, { priority: "low" } as RequestInit).catch(() => undefined);
     }
   }, []);
 
-  const { cohortSummary, topGenes, consequences, individuals, loading, error } =
-    useDashboard(activeGenes);
+  const { cohortSummary, topGenes, consequences, individuals, totalVariants, sharedPathogenicGenes, loading, error } =
+    useDashboard();
   const { data: clinvar, loading: clinvarLoading } = useClinvarVersion();
 
-  function applyGeneFilter() {
-    const genes = geneInput
-      .split(",")
-      .map((g) => g.trim().toUpperCase())
-      .filter(Boolean);
-    setActiveGenes(genes);
-  }
-
-  function clearFilter() {
-    setGeneInput("");
-    setActiveGenes([]);
-  }
-
-  const totalVariants = cohortSummary.reduce((s, r) => s + r.count, 0);
+  const annotatedVariants = cohortSummary.reduce((s, r) => s + r.count, 0);
   const pathogenicCount =
     cohortSummary.find((r) =>
       ["Pathogenic", "Likely_pathogenic", "Pathogenic/Likely_pathogenic"].includes(r.value)
@@ -50,51 +34,12 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <AgentPanel subtitle="Ask Varis about the cohort" />
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-brand-text">Dashboard</h1>
-          <p className="mt-1 text-sm text-brand-muted">
-            Cohort-level analytics across all loaded individuals.
-          </p>
-        </div>
-
-        {/* Gene filter */}
-        <div className="flex items-center gap-2 shrink-0">
-          <input
-            type="text"
-            value={geneInput}
-            onChange={(e) => setGeneInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && applyGeneFilter()}
-            placeholder="Filter by gene (e.g. BRCA1, TP53)"
-            className="w-72 rounded-lg border border-brand-border bg-brand-surface px-3 py-1.5 text-sm text-brand-text placeholder:text-brand-muted"
-          />
-          <button
-            onClick={applyGeneFilter}
-            className="rounded-lg bg-brand-cyan/10 border border-brand-cyan/30 px-3 py-1.5 text-sm text-brand-cyan hover:bg-brand-cyan/20 transition-colors"
-          >
-            Apply
-          </button>
-          {activeGenes.length > 0 && (
-            <button
-              onClick={clearFilter}
-              className="rounded-lg border border-brand-border px-3 py-1.5 text-sm text-brand-muted hover:text-brand-text transition-colors"
-            >
-              Clear
-            </button>
-          )}
-        </div>
+      <div>
+        <h1 className="text-2xl font-semibold text-brand-text">Dashboard</h1>
+        <p className="mt-1 text-sm text-brand-muted">
+          Cohort-level analytics across all loaded individuals.
+        </p>
       </div>
-
-      {activeGenes.length > 0 && (
-        <div className="flex items-center gap-2 text-xs text-brand-muted">
-          <span>Filtering by:</span>
-          {activeGenes.map((g) => (
-            <span key={g} className="rounded px-2 py-0.5 bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20">
-              {g}
-            </span>
-          ))}
-        </div>
-      )}
 
       {error && (
         <div className="rounded-xl border border-red-800/40 bg-red-900/10 px-4 py-3 text-sm text-red-400">
@@ -103,9 +48,10 @@ export default function DashboardPage() {
       )}
 
       {/* Stat cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-5 gap-4">
+        <StatCard label="Total Variants" value={loading ? "—" : (totalVariants?.toLocaleString() ?? "—")} />
         <StatCard label="Individuals" value={loading ? "—" : String(individuals.length)} />
-        <StatCard label="Annotated Variants" value={loading ? "—" : totalVariants.toLocaleString()} />
+        <StatCard label="Annotated Variants" value={loading ? "—" : annotatedVariants.toLocaleString()} />
         <StatCard
           label="Pathogenic / Likely Pathogenic"
           value={loading ? "—" : pathogenicCount.toLocaleString()}
@@ -178,6 +124,36 @@ export default function DashboardPage() {
           )}
         </Section>
       </div>
+
+      {/* Shared pathogenic burden */}
+      {(loading || sharedPathogenicGenes.length > 0) && (
+        <Section title="Shared Pathogenic Burden">
+          {loading ? (
+            <LoadingRows />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-brand-border">
+                    <th className="pb-2 text-left font-semibold text-brand-cyan">Gene</th>
+                    <th className="pb-2 text-right font-semibold text-brand-cyan">Individuals</th>
+                    <th className="pb-2 text-right font-semibold text-brand-cyan">Pathogenic Variants</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-brand-border/40">
+                  {sharedPathogenicGenes.map((g) => (
+                    <tr key={g.gene_symbol} className="hover:bg-brand-border/20 transition-colors">
+                      <td className="py-2 font-mono text-brand-text">{g.gene_symbol}</td>
+                      <td className="py-2 text-right text-brand-gold">{g.individual_count}</td>
+                      <td className="py-2 text-right text-brand-muted">{g.pathogenic_count.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Section>
+      )}
 
       {/* Clinical significance breakdown */}
       <Section title="Clinical Significance">
