@@ -4,7 +4,7 @@ Browser-based internal tool for the [Variant Agentic Processing](https://github.
 
 ## Overview
 
-- **Dashboard** — cohort-level stats (total variants, pathogenic counts, ClinVar release), top genes by pathogenic burden, clinical significance breakdown, per-individual drill-down to a full variant table
+- **Dashboard** — cohort-level stats (total variants, annotated variants, pathogenic counts, ClinVar release), top genes by pathogenic burden, shared pathogenic burden across individuals, clinical significance breakdown, per-individual drill-down to a full variant table
 - **Query** — natural language interface over variant data; streams tool calls and answers from the agent-service as SSE events
 - **Pipelines** — submit VCF ingest and ClinVar refresh jobs, monitor status, view step-by-step progress
 - **Samples** — browse, search, and filter 2,504 1000 Genomes individuals; trigger VCF ingest per individual
