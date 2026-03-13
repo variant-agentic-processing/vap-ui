@@ -90,3 +90,20 @@ export interface IndividualVariants {
 export function getIndividualVariants(id: string): Promise<IndividualVariants> {
   return request(`/api/individuals/${encodeURIComponent(id)}/variants`);
 }
+
+export interface GeneVariant extends Variant {
+  individual_id: string;
+}
+
+export interface GeneVariants {
+  gene_symbol: string;
+  total_count: number;
+  pathogenic_count: number;
+  distinct_individuals: number;
+  truncated: boolean;
+  variants: GeneVariant[];
+}
+
+export function getGeneVariants(symbol: string): Promise<GeneVariants> {
+  return request(`/api/genes/${encodeURIComponent(symbol)}/variants`);
+}
