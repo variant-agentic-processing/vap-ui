@@ -3,5 +3,5 @@ config:
   gcp:region: us-central1
   vap-ui:project_id: variant-processing
   vap-ui:region: us-central1
-  vap-ui:image_tag: "3a23592"
+  vap-ui:image_tag: "2cb83ab"
 encryptionsalt: v1:4LZbZpoWRpg=:v1:KDgVXRTFYR+cNoqd:Mxe0EEOycJgO9sUR4eSq1PKymK1g1Q==
