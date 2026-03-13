@@ -77,21 +77,21 @@ export default function GenePage({ params }: { params: Promise<{ symbol: string 
         <div className="overflow-auto rounded-xl border border-brand-border" style={{ maxHeight: "600px" }}>
           <table className="border-collapse text-xs" style={{ tableLayout: "fixed", width: "1620px" }}>
             <colgroup>
-              <col style={{ width: 110 }} /> {/* Individual */}
-              <col style={{ width: 60 }} />  {/* Chr */}
-              <col style={{ width: 52 }} />  {/* Ref */}
-              <col style={{ width: 52 }} />  {/* Alt */}
-              <col style={{ width: 72 }} />  {/* Genotype */}
-              <col style={{ width: 160 }} /> {/* Significance */}
-              <col style={{ width: 90 }} />  {/* ClinVar ID */}
-              <col style={{ width: 100 }} /> {/* rsID */}
-              <col style={{ width: 160 }} /> {/* Review Status */}
-              <col style={{ width: 200 }} /> {/* Condition */}
-              <col style={{ width: 160 }} /> {/* Consequence */}
-              <col style={{ width: 90 }} />  {/* Position */}
-              <col style={{ width: 160 }} /> {/* HGVS c. */}
-              <col style={{ width: 140 }} /> {/* HGVS p. */}
-              <col style={{ width: 72 }} />  {/* AF */}
+              <col style={{ width: 110 }} />
+              <col style={{ width: 60 }} />
+              <col style={{ width: 52 }} />
+              <col style={{ width: 52 }} />
+              <col style={{ width: 72 }} />
+              <col style={{ width: 160 }} />
+              <col style={{ width: 90 }} />
+              <col style={{ width: 100 }} />
+              <col style={{ width: 160 }} />
+              <col style={{ width: 200 }} />
+              <col style={{ width: 160 }} />
+              <col style={{ width: 90 }} />
+              <col style={{ width: 160 }} />
+              <col style={{ width: 140 }} />
+              <col style={{ width: 72 }} />
             </colgroup>
             <thead className="sticky top-0 z-10 bg-brand-navy">
               <tr>
