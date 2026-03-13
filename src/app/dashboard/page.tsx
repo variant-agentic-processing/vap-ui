@@ -108,9 +108,12 @@ export default function DashboardPage() {
                 const pct = max > 0 ? (g.pathogenic_count / max) * 100 : 0;
                 return (
                   <div key={g.gene_symbol} className="flex items-center gap-3">
-                    <span className="w-24 shrink-0 font-mono text-xs text-brand-text truncate">
+                    <Link
+                      href={`/genes/${encodeURIComponent(g.gene_symbol)}`}
+                      className="w-24 shrink-0 font-mono text-xs text-brand-cyan hover:underline truncate"
+                    >
                       {g.gene_symbol}
-                    </span>
+                    </Link>
                     <div className="flex-1 h-1.5 rounded-full bg-brand-border overflow-hidden">
                       <div className="h-full rounded-full bg-brand-gold" style={{ width: `${pct}%` }} />
                     </div>
@@ -143,7 +146,11 @@ export default function DashboardPage() {
                 <tbody className="divide-y divide-brand-border/40">
                   {sharedPathogenicGenes.map((g) => (
                     <tr key={g.gene_symbol} className="hover:bg-brand-border/20 transition-colors">
-                      <td className="py-2 font-mono text-brand-text">{g.gene_symbol}</td>
+                      <td className="py-2 font-mono">
+                        <Link href={`/genes/${encodeURIComponent(g.gene_symbol)}`} className="text-brand-cyan hover:underline">
+                          {g.gene_symbol}
+                        </Link>
+                      </td>
                       <td className="py-2 text-right text-brand-gold">{g.individual_count}</td>
                       <td className="py-2 text-right text-brand-muted">{g.pathogenic_count.toLocaleString()}</td>
                     </tr>
