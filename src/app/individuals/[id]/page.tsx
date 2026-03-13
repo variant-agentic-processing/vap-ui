@@ -39,7 +39,6 @@ function sigColor(sig: string) {
 // Column definitions: label and default width in px
 const COLUMNS: { label: string; width: number }[] = [
   { label: "Chr",          width: 64  },
-  { label: "Position",     width: 90  },
   { label: "Ref",          width: 52  },
   { label: "Alt",          width: 52  },
   { label: "Genotype",     width: 72  },
@@ -50,12 +49,13 @@ const COLUMNS: { label: string; width: number }[] = [
   { label: "Gene",         width: 80  },
   { label: "Significance", width: 160 },
   { label: "ClinVar ID",   width: 90  },
+  { label: "rsID",         width: 100 },
   { label: "Review Status",width: 160 },
   { label: "Condition",    width: 200 },
   { label: "Consequence",  width: 160 },
+  { label: "Position",     width: 90  },
   { label: "HGVS c.",      width: 160 },
   { label: "HGVS p.",      width: 140 },
-  { label: "rsID",         width: 100 },
   { label: "Last Eval.",   width: 90  },
   { label: "AF",           width: 72  },
 ];
@@ -211,7 +211,6 @@ function VariantRow({ variant: v }: { variant: Variant }) {
   return (
     <tr className="transition-colors even:bg-brand-border/10 hover:bg-brand-border/20">
       <Cell value={v.chromosome}  className="text-brand-muted" mono />
-      <Cell value={v.position.toLocaleString()} className="text-brand-text" mono />
       <Cell value={v.ref}         className="text-brand-text" mono />
       <Cell value={v.alt}         className="text-brand-text" mono />
       <Cell value={v.genotype}    className="text-brand-muted" mono />
@@ -220,7 +219,7 @@ function VariantRow({ variant: v }: { variant: Variant }) {
       <Cell value={v.genotype_quality != null ? v.genotype_quality.toFixed(0) : null} className="text-right text-brand-muted" />
       <Cell value={v.filter}      className="text-brand-muted" />
       <Cell value={v.gene_symbol} className="text-brand-text" mono />
-      <Cell value={sigLabel || null}       className={sigClass} />
+      <Cell value={sigLabel || null} className={sigClass} />
       <td
         className="px-3 py-1.5 text-brand-muted font-mono overflow-hidden"
         style={{ whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}
@@ -237,12 +236,28 @@ function VariantRow({ variant: v }: { variant: Variant }) {
           </a>
         ) : "—"}
       </td>
-      <Cell value={reviewLabel || null}    className="text-brand-muted" />
-      <Cell value={v.condition_name}       className="text-brand-muted" />
+      <td
+        className="px-3 py-1.5 text-brand-muted font-mono overflow-hidden"
+        style={{ whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}
+      >
+        {v.rsid ? (
+          <a
+            href={`https://www.ncbi.nlm.nih.gov/snp/${v.rsid}`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-brand-cyan hover:underline"
+            title={v.rsid}
+          >
+            {v.rsid}
+          </a>
+        ) : "—"}
+      </td>
+      <Cell value={reviewLabel || null}      className="text-brand-muted" />
+      <Cell value={v.condition_name}         className="text-brand-muted" />
       <Cell value={consequenceLabel || null} className="text-brand-muted" />
+      <Cell value={v.position.toLocaleString()} className="text-brand-text" mono />
       <Cell value={v.hgvs_c}     className="text-brand-muted text-[11px]" mono />
       <Cell value={v.hgvs_p}     className="text-brand-muted text-[11px]" mono />
-      <Cell value={v.rsid}        className="text-brand-muted" mono />
       <Cell value={v.clinvar_last_evaluated || null} className="text-brand-muted" />
       <Cell value={v.allele_frequency > 0 ? v.allele_frequency.toExponential(2) : null} className="text-right text-brand-muted" />
     </tr>
