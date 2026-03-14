@@ -6,6 +6,7 @@ import { useGeneVariants } from "@/hooks/useGeneVariants";
 import { AgentPanel } from "@/components/AgentPanel";
 import { ZygosityBadge } from "@/components/ZygosityBadge";
 import { VarisCell } from "@/components/VarisCell";
+import { IndividualIdCell } from "@/components/IndividualIdCell";
 import type { GeneVariant } from "@/lib/cohort-client";
 import {
   CLINICAL_SIG_NOTES,
@@ -170,12 +171,10 @@ function GeneVariantRow({ variant: v }: { variant: GeneVariant }) {
   return (
     <tr className="transition-colors even:bg-brand-border/10 hover:bg-brand-border/20">
       <td
-        className="px-3 py-1.5 font-mono overflow-hidden text-brand-cyan"
+        className="px-3 py-1.5 font-mono overflow-hidden"
         style={{ whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}
       >
-        <Link href={`/individuals/${encodeURIComponent(v.individual_id)}`} className="hover:underline">
-          {v.individual_id}
-        </Link>
+        <IndividualIdCell id={v.individual_id} />
       </td>
       <VarisCell value={v.chromosome} className="text-brand-muted" mono varisNote={chromNote(v.chromosome)} />
       <Cell value={v.ref}        className="text-brand-text" mono />
