@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { useIndividualVariants } from "@/hooks/useIndividualVariants";
 import { useSample } from "@/hooks/useSample";
@@ -8,6 +8,7 @@ import { useClinvarVersion } from "@/hooks/useClinvarVersion";
 import { AgentPanel } from "@/components/AgentPanel";
 import { ZygosityBadge } from "@/components/ZygosityBadge";
 import { VarisCell } from "@/components/VarisCell";
+import { VarisPopover, type PopoverPos } from "@/components/VarisPopover";
 import type { Sample } from "@/lib/sample-client";
 import type { Variant } from "@/lib/cohort-client";
 import {
@@ -45,15 +46,15 @@ function sigColor(sig: string) {
   return SIG_COLORS[sig] ?? "text-brand-muted";
 }
 
-// Column definitions: label and default width in px
-const COLUMNS: { label: string; width: number }[] = [
+// Column definitions: label, default width in px, and optional Varis note
+const COLUMNS: { label: string; width: number; varisNote?: string }[] = [
   { label: "Chr",          width: 64  },
   { label: "Ref",          width: 52  },
   { label: "Alt",          width: 52  },
   { label: "Genotype",     width: 96  },
-  { label: "Depth",        width: 58  },
-  { label: "Quality",      width: 64  },
-  { label: "GQ",           width: 52  },
+  { label: "Depth",        width: 58,  varisNote: "Read depth — how many sequencing reads covered this position. Higher depth means more confidence. Typical WGS targets 30×; clinical panels often require ≥20×." },
+  { label: "Quality",      width: 64,  varisNote: "Variant quality score (QUAL) — Phred-scaled confidence that the variant is real. A score of 30 means a 1-in-1,000 chance it's a sequencing error. Scores above 30 are generally considered reliable." },
+  { label: "GQ",           width: 52,  varisNote: "Genotype quality — Phred-scaled confidence in the specific genotype call (e.g. 0/1 het vs 1/1 hom). Higher is better; values below 20 are often flagged as low-confidence." },
   { label: "Gene",         width: 80  },
   { label: "Significance", width: 160 },
   { label: "ClinVar ID",   width: 90  },
@@ -166,14 +167,7 @@ export default function IndividualPage({
             <thead className="sticky top-0 z-10 bg-brand-navy">
               <tr>
                 {COLUMNS.map((col) => (
-                  <th
-                    key={col.label}
-                    title={col.label}
-                    className="border-b border-brand-border px-3 py-2 text-left font-semibold text-brand-cyan overflow-hidden"
-                    style={{ resize: "horizontal", overflow: "hidden", whiteSpace: "nowrap" }}
-                  >
-                    {col.label}
-                  </th>
+                  <VarisHeaderCell key={col.label} label={col.label} varisNote={col.varisNote} />
                 ))}
               </tr>
             </thead>
@@ -207,6 +201,43 @@ function Cell({
     >
       {display}
     </td>
+  );
+}
+
+function VarisHeaderCell({ label, varisNote }: { label: string; varisNote?: string }) {
+  const ref = useRef<HTMLTableCellElement>(null);
+  const [pos, setPos] = useState<PopoverPos | null>(null);
+
+  useEffect(() => {
+    if (!pos) return;
+    function hide() { setPos(null); }
+    window.addEventListener("scroll", hide, { capture: true, passive: true });
+    return () => window.removeEventListener("scroll", hide, { capture: true });
+  }, [pos]);
+
+  return (
+    <>
+      <th
+        ref={ref}
+        title={label}
+        className="border-b border-brand-border px-3 py-2 text-left font-semibold text-brand-cyan overflow-hidden"
+        style={{ resize: "horizontal", overflow: "hidden", whiteSpace: "nowrap" }}
+        onMouseEnter={() => {
+          if (!varisNote || !ref.current) return;
+          const r = ref.current.getBoundingClientRect();
+          setPos({ top: r.bottom + 6, left: r.left + r.width / 2 });
+        }}
+        onMouseLeave={() => setPos(null)}
+      >
+        {label}{varisNote && <span className="ml-1 text-brand-cyan/50 text-[10px]">?</span>}
+      </th>
+      {pos && varisNote && (
+        <VarisPopover pos={pos} placement="below" cardClassName="w-72">
+          <p className="text-[11px] font-semibold text-brand-text mb-0.5">{label}</p>
+          <p className="text-[11px] leading-relaxed text-brand-muted">{varisNote}</p>
+        </VarisPopover>
+      )}
+    </>
   );
 }
 

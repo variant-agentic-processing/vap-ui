@@ -11,7 +11,7 @@ export interface PopoverPos {
 interface VarisPopoverProps {
   pos: PopoverPos;
   cardClassName?: string;
-  placement?: "above" | "right";
+  placement?: "above" | "below" | "right";
   children: React.ReactNode;
 }
 
@@ -19,6 +19,8 @@ export function VarisPopover({ pos, cardClassName = "w-56", placement = "right",
   const wrapStyle =
     placement === "right"
       ? { top: pos.top, left: pos.left, transform: "translateY(-50%)" }
+      : placement === "below"
+      ? { top: pos.top, left: pos.left, transform: "translateX(-50%)" }
       : { top: pos.top, left: pos.left, transform: "translateX(-50%)" };
 
   const tail =
@@ -35,8 +37,21 @@ export function VarisPopover({ pos, cardClassName = "w-56", placement = "right",
           borderRight: "6px solid var(--color-brand-border, #2a3a4a)",
         }}
       />
+    ) : placement === "below" ? (
+      // Upward tail (card is below anchor)
+      <div
+        className="absolute h-0 w-0"
+        style={{
+          bottom: "100%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          borderLeft: "6px solid transparent",
+          borderRight: "6px solid transparent",
+          borderBottom: "6px solid var(--color-brand-border, #2a3a4a)",
+        }}
+      />
     ) : (
-      // Downward tail
+      // Downward tail (card is above anchor)
       <div
         className="absolute h-0 w-0"
         style={{
