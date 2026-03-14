@@ -229,7 +229,7 @@ function VarisHeaderCell({ label, varisNote }: { label: string; varisNote?: stri
         }}
         onMouseLeave={() => setPos(null)}
       >
-        {label}{varisNote && <span className="ml-1 text-brand-cyan/50 text-[10px]">?</span>}
+        {label}
       </th>
       {pos && varisNote && (
         <VarisPopover pos={pos} placement="below" cardClassName="w-72">
