@@ -276,8 +276,6 @@ function ClinvarStatCard({ version }: { version: string | null }) {
   );
 }
 
-const GENE_CARD_HEIGHT = 84;
-
 function GeneSymbolLink({ symbol }: { symbol: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [pos, setPos] = useState<PopoverPos | null>(null);
@@ -294,7 +292,7 @@ function GeneSymbolLink({ symbol }: { symbol: string }) {
   function handleMouseEnter() {
     if (!ref.current) return;
     const r = ref.current.getBoundingClientRect();
-    setPos({ top: r.top - GENE_CARD_HEIGHT - 10, left: r.left + r.width / 2 });
+    setPos({ top: r.top + r.height / 2, left: r.right + 10 });
     if (!fetched.current) {
       fetched.current = true;
       if (!note) {
@@ -322,7 +320,7 @@ function GeneSymbolLink({ symbol }: { symbol: string }) {
         </Link>
       </span>
       {pos && (
-        <VarisPopover pos={pos} cardClassName="w-80">
+        <VarisPopover pos={pos} cardClassName="w-80" placement="right">
           <p className="text-[11px] font-semibold text-brand-text mb-0.5">{symbol}</p>
           {note
             ? <p className="text-[11px] leading-relaxed text-brand-muted">{note}</p>

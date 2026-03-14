@@ -11,15 +11,47 @@ export interface PopoverPos {
 interface VarisPopoverProps {
   pos: PopoverPos;
   cardClassName?: string;
+  placement?: "above" | "right";
   children: React.ReactNode;
 }
 
-export function VarisPopover({ pos, cardClassName = "w-56", children }: VarisPopoverProps) {
+export function VarisPopover({ pos, cardClassName = "w-56", placement = "above", children }: VarisPopoverProps) {
+  const wrapStyle =
+    placement === "right"
+      ? { top: pos.top, left: pos.left, transform: "translateY(-50%)" }
+      : { top: pos.top, left: pos.left, transform: "translateX(-50%)" };
+
+  const tail =
+    placement === "right" ? (
+      // Left-pointing tail
+      <div
+        className="absolute h-0 w-0"
+        style={{
+          top: "50%",
+          left: 0,
+          transform: "translate(-100%, -50%)",
+          borderTop: "6px solid transparent",
+          borderBottom: "6px solid transparent",
+          borderRight: "6px solid var(--color-brand-border, #2a3a4a)",
+        }}
+      />
+    ) : (
+      // Downward tail
+      <div
+        className="absolute h-0 w-0"
+        style={{
+          top: "100%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          borderLeft: "6px solid transparent",
+          borderRight: "6px solid transparent",
+          borderTop: "6px solid var(--color-brand-border, #2a3a4a)",
+        }}
+      />
+    );
+
   return createPortal(
-    <div
-      className="pointer-events-none fixed z-[9999]"
-      style={{ top: pos.top, left: pos.left, transform: "translateX(-50%)" }}
-    >
+    <div className="pointer-events-none fixed z-[9999]" style={wrapStyle}>
       <div className={`flex items-start gap-2.5 rounded-xl border border-brand-border bg-brand-navy px-3 py-2.5 shadow-2xl ${cardClassName}`}>
         <Image
           src="/varis.jpg"
@@ -33,18 +65,7 @@ export function VarisPopover({ pos, cardClassName = "w-56", children }: VarisPop
           {children}
         </div>
       </div>
-      {/* Speech-bubble tail */}
-      <div
-        className="absolute h-0 w-0"
-        style={{
-          top: "100%",
-          left: "50%",
-          transform: "translateX(-50%)",
-          borderLeft: "6px solid transparent",
-          borderRight: "6px solid transparent",
-          borderTop: "6px solid var(--color-brand-border, #2a3a4a)",
-        }}
-      />
+      {tail}
     </div>,
     document.body,
   );
