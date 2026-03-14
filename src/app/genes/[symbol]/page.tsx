@@ -4,6 +4,7 @@ import { use } from "react";
 import Link from "next/link";
 import { useGeneVariants } from "@/hooks/useGeneVariants";
 import { AgentPanel } from "@/components/AgentPanel";
+import { ZygosityBadge } from "@/components/ZygosityBadge";
 import type { GeneVariant } from "@/lib/cohort-client";
 
 const SIG_COLORS: Record<string, string> = {
@@ -75,13 +76,13 @@ export default function GenePage({ params }: { params: Promise<{ symbol: string 
 
       {data && data.variants.length > 0 && (
         <div className="overflow-auto rounded-xl border border-brand-border" style={{ maxHeight: "600px" }}>
-          <table className="border-collapse text-xs" style={{ tableLayout: "fixed", width: "1620px" }}>
+          <table className="border-collapse text-xs" style={{ tableLayout: "fixed", width: "1644px" }}>
             <colgroup>
               <col style={{ width: 110 }} />
               <col style={{ width: 60 }} />
               <col style={{ width: 52 }} />
               <col style={{ width: 52 }} />
-              <col style={{ width: 72 }} />
+              <col style={{ width: 96 }} />
               <col style={{ width: 160 }} />
               <col style={{ width: 90 }} />
               <col style={{ width: 100 }} />
@@ -171,7 +172,10 @@ function GeneVariantRow({ variant: v }: { variant: GeneVariant }) {
       <Cell value={v.chromosome} className="text-brand-muted" mono />
       <Cell value={v.ref}        className="text-brand-text" mono />
       <Cell value={v.alt}        className="text-brand-text" mono />
-      <Cell value={v.genotype}   className="text-brand-muted" mono />
+      <td className="px-3 py-1.5 font-mono overflow-hidden" style={{ whiteSpace: "nowrap" }}>
+        <span className="text-brand-muted">{v.genotype || "—"}</span>
+        <ZygosityBadge genotype={v.genotype} />
+      </td>
       <Cell value={sigLabel || null} className={sigClass} />
       <td
         className="px-3 py-1.5 text-brand-muted font-mono overflow-hidden"

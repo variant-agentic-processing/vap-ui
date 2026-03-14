@@ -6,6 +6,7 @@ import { useIndividualVariants } from "@/hooks/useIndividualVariants";
 import { useSample } from "@/hooks/useSample";
 import { useClinvarVersion } from "@/hooks/useClinvarVersion";
 import { AgentPanel } from "@/components/AgentPanel";
+import { ZygosityBadge } from "@/components/ZygosityBadge";
 import type { Sample } from "@/lib/sample-client";
 import type { Variant } from "@/lib/cohort-client";
 
@@ -41,7 +42,7 @@ const COLUMNS: { label: string; width: number }[] = [
   { label: "Chr",          width: 64  },
   { label: "Ref",          width: 52  },
   { label: "Alt",          width: 52  },
-  { label: "Genotype",     width: 72  },
+  { label: "Genotype",     width: 96  },
   { label: "Depth",        width: 58  },
   { label: "Quality",      width: 64  },
   { label: "GQ",           width: 52  },
@@ -213,7 +214,10 @@ function VariantRow({ variant: v }: { variant: Variant }) {
       <Cell value={v.chromosome}  className="text-brand-muted" mono />
       <Cell value={v.ref}         className="text-brand-text" mono />
       <Cell value={v.alt}         className="text-brand-text" mono />
-      <Cell value={v.genotype}    className="text-brand-muted" mono />
+      <td className="px-3 py-1.5 font-mono overflow-hidden" style={{ whiteSpace: "nowrap" }}>
+        <span className="text-brand-muted">{v.genotype || "—"}</span>
+        <ZygosityBadge genotype={v.genotype} />
+      </td>
       <Cell value={v.depth}       className="text-right text-brand-muted" />
       <Cell value={v.quality != null ? v.quality.toFixed(0) : null} className="text-right text-brand-muted" />
       <Cell value={v.genotype_quality != null ? v.genotype_quality.toFixed(0) : null} className="text-right text-brand-muted" />
