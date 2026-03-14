@@ -99,7 +99,7 @@ export function ZygosityBadge({ genotype }: { genotype: string }) {
             : "ml-1.5 cursor-default rounded px-1 py-0.5 text-[10px] font-semibold leading-none bg-brand-gold/15 text-brand-gold"
         }
       >
-        🧬 {z}
+        {z}
       </span>
       {pos && <VarisPopover label={z === "Het" ? "Heterozygous" : "Homozygous"} text={z === "Het" ? "one reference allele and one alternate allele" : "two copies of the alternate allele"} pos={pos} />}
     </>
