@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useClinvarVersion } from "@/hooks/useClinvarVersion";
 import { AgentPanel } from "@/components/AgentPanel";
+import { VarisPopover, type PopoverPos } from "@/components/VarisPopover";
+import { getSample, type Sample } from "@/lib/sample-client";
 
 const WARMUP_ENDPOINTS = [
   "/api/agent/health",
@@ -81,12 +83,7 @@ export default function DashboardPage() {
                   {individuals.map((ind) => (
                     <tr key={ind.individual_id} className="transition-colors hover:bg-brand-border/20">
                       <td className="py-2 font-mono">
-                        <Link
-                          href={`/individuals/${encodeURIComponent(ind.individual_id)}`}
-                          className="text-brand-cyan hover:underline"
-                        >
-                          {ind.individual_id}
-                        </Link>
+                        <IndividualIdCell id={ind.individual_id} />
                       </td>
                       <td className="py-2 text-right text-brand-muted">{ind.variant_count.toLocaleString()}</td>
                       <td className="py-2 text-center text-brand-gold">{ind.pathogenic_count.toLocaleString()}</td>
@@ -280,6 +277,76 @@ function ClinvarStatCard({ version }: { version: string | null }) {
         <p className="mt-1.5 text-xs text-red-400/80">Refresh recommended</p>
       )}
     </div>
+  );
+}
+
+const SAMPLE_CARD_HEIGHT = 84;
+
+function IndividualIdCell({ id }: { id: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [pos, setPos] = useState<PopoverPos | null>(null);
+  const [sample, setSample] = useState<Sample | null>(null);
+  const fetched = useRef(false);
+
+  useEffect(() => {
+    if (!pos) return;
+    function hide() { setPos(null); }
+    window.addEventListener("scroll", hide, { capture: true, passive: true });
+    return () => window.removeEventListener("scroll", hide, { capture: true });
+  }, [pos]);
+
+  function handleMouseEnter() {
+    if (!ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    setPos({ top: r.top - SAMPLE_CARD_HEIGHT - 10, left: r.left + r.width / 2 });
+    if (!fetched.current) {
+      fetched.current = true;
+      getSample(id).then(setSample).catch(() => {});
+    }
+  }
+
+  const meta = sample
+    ? [
+        sample.sex ? sample.sex.charAt(0).toUpperCase() + sample.sex.slice(1) : null,
+        sample.population_name && sample.population_code
+          ? `${sample.population_name} (${sample.population_code})`
+          : sample.population_name ?? sample.population_code,
+        sample.superpopulation_name && sample.superpopulation_code
+          ? `${sample.superpopulation_name} (${sample.superpopulation_code})`
+          : sample.superpopulation_name ?? sample.superpopulation_code,
+      ]
+        .filter(Boolean)
+        .join(" · ")
+    : null;
+
+  return (
+    <>
+      <span
+        ref={ref}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={() => setPos(null)}
+        className="inline-block"
+      >
+        <Link
+          href={`/individuals/${encodeURIComponent(id)}`}
+          className="text-brand-cyan hover:underline"
+        >
+          {id}
+        </Link>
+      </span>
+      {pos && (
+        <VarisPopover pos={pos} cardClassName="w-72">
+          {sample ? (
+            <>
+              <p className="text-[11px] font-semibold text-brand-text truncate">{sample.display_name}</p>
+              {meta && <p className="text-[11px] text-brand-muted mt-0.5 leading-relaxed">{meta}</p>}
+            </>
+          ) : (
+            <p className="text-[11px] text-brand-muted animate-pulse">Loading…</p>
+          )}
+        </VarisPopover>
+      )}
+    </>
   );
 }
 
