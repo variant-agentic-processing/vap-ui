@@ -1,13 +1,23 @@
 "use client";
 
-import { use } from "react";
+import { use, useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { useIndividualVariants } from "@/hooks/useIndividualVariants";
 import { useSample } from "@/hooks/useSample";
 import { useClinvarVersion } from "@/hooks/useClinvarVersion";
 import { AgentPanel } from "@/components/AgentPanel";
+import { ZygosityBadge } from "@/components/ZygosityBadge";
+import { VarisCell } from "@/components/VarisCell";
+import { VarisPopover, type PopoverPos } from "@/components/VarisPopover";
 import type { Sample } from "@/lib/sample-client";
 import type { Variant } from "@/lib/cohort-client";
+import {
+  CLINICAL_SIG_NOTES,
+  CONSEQUENCE_NOTES,
+  REVIEW_STATUS_NOTES,
+  chromNote,
+  afNote,
+} from "@/lib/variantNotes";
 
 function buildContext(individualId: string, sample: Sample | null): string {
   const parts = [`The user is viewing individual ${individualId}.`];
@@ -36,16 +46,15 @@ function sigColor(sig: string) {
   return SIG_COLORS[sig] ?? "text-brand-muted";
 }
 
-// Column definitions: label and default width in px
-const COLUMNS: { label: string; width: number }[] = [
+// Column definitions: label, default width in px, and optional Varis note
+const COLUMNS: { label: string; width: number; varisNote?: string }[] = [
   { label: "Chr",          width: 64  },
   { label: "Ref",          width: 52  },
   { label: "Alt",          width: 52  },
-  { label: "Genotype",     width: 72  },
-  { label: "Depth",        width: 58  },
-  { label: "Quality",      width: 64  },
-  { label: "GQ",           width: 52  },
-  { label: "Filter",       width: 64  },
+  { label: "Genotype",     width: 96  },
+  { label: "Depth",        width: 58,  varisNote: "Read depth — how many sequencing reads covered this position. Higher depth means more confidence. Typical WGS targets 30×; clinical panels often require ≥20×." },
+  { label: "Quality",      width: 64,  varisNote: "Variant quality score (QUAL) — Phred-scaled confidence that the variant is real. A score of 30 means a 1-in-1,000 chance it's a sequencing error. Scores above 30 are generally considered reliable." },
+  { label: "GQ",           width: 52,  varisNote: "Genotype quality — Phred-scaled confidence in the specific genotype call (e.g. 0/1 het vs 1/1 hom). Higher is better; values below 20 are often flagged as low-confidence." },
   { label: "Gene",         width: 80  },
   { label: "Significance", width: 160 },
   { label: "ClinVar ID",   width: 90  },
@@ -158,14 +167,7 @@ export default function IndividualPage({
             <thead className="sticky top-0 z-10 bg-brand-navy">
               <tr>
                 {COLUMNS.map((col) => (
-                  <th
-                    key={col.label}
-                    title={col.label}
-                    className="border-b border-brand-border px-3 py-2 text-left font-semibold text-brand-cyan overflow-hidden"
-                    style={{ resize: "horizontal", overflow: "hidden", whiteSpace: "nowrap" }}
-                  >
-                    {col.label}
-                  </th>
+                  <VarisHeaderCell key={col.label} label={col.label} varisNote={col.varisNote} />
                 ))}
               </tr>
             </thead>
@@ -202,6 +204,43 @@ function Cell({
   );
 }
 
+function VarisHeaderCell({ label, varisNote }: { label: string; varisNote?: string }) {
+  const ref = useRef<HTMLTableCellElement>(null);
+  const [pos, setPos] = useState<PopoverPos | null>(null);
+
+  useEffect(() => {
+    if (!pos) return;
+    function hide() { setPos(null); }
+    window.addEventListener("scroll", hide, { capture: true, passive: true });
+    return () => window.removeEventListener("scroll", hide, { capture: true });
+  }, [pos]);
+
+  return (
+    <>
+      <th
+        ref={ref}
+        title={label}
+        className="border-b border-brand-border px-3 py-2 text-left font-semibold text-brand-cyan overflow-hidden"
+        style={{ resize: "horizontal", overflow: "hidden", whiteSpace: "nowrap" }}
+        onMouseEnter={() => {
+          if (!varisNote || !ref.current) return;
+          const r = ref.current.getBoundingClientRect();
+          setPos({ top: r.bottom + 6, left: r.left + r.width / 2 });
+        }}
+        onMouseLeave={() => setPos(null)}
+      >
+        {label}
+      </th>
+      {pos && varisNote && (
+        <VarisPopover pos={pos} placement="below" cardClassName="w-72">
+          <p className="text-[11px] font-semibold text-brand-text mb-0.5">{label}</p>
+          <p className="text-[11px] leading-relaxed text-brand-muted">{varisNote}</p>
+        </VarisPopover>
+      )}
+    </>
+  );
+}
+
 function VariantRow({ variant: v }: { variant: Variant }) {
   const sigClass = sigColor(v.clinical_significance);
   const reviewLabel = v.review_status.replace(/_/g, " ").replace(/,/g, ", ");
@@ -210,16 +249,19 @@ function VariantRow({ variant: v }: { variant: Variant }) {
 
   return (
     <tr className="transition-colors even:bg-brand-border/10 hover:bg-brand-border/20">
-      <Cell value={v.chromosome}  className="text-brand-muted" mono />
+      <VarisCell value={v.chromosome}  className="text-brand-muted" mono varisNote={chromNote(v.chromosome)} />
       <Cell value={v.ref}         className="text-brand-text" mono />
       <Cell value={v.alt}         className="text-brand-text" mono />
-      <Cell value={v.genotype}    className="text-brand-muted" mono />
+      <td title={v.genotype || undefined} className="px-3 py-1.5 font-mono overflow-hidden" style={{ whiteSpace: "nowrap" }}>
+        <span className="text-brand-muted">{v.genotype || "—"}</span>
+        <ZygosityBadge genotype={v.genotype} />
+      </td>
       <Cell value={v.depth}       className="text-right text-brand-muted" />
       <Cell value={v.quality != null ? v.quality.toFixed(0) : null} className="text-right text-brand-muted" />
       <Cell value={v.genotype_quality != null ? v.genotype_quality.toFixed(0) : null} className="text-right text-brand-muted" />
-      <Cell value={v.filter}      className="text-brand-muted" />
+
       <Cell value={v.gene_symbol} className="text-brand-text" mono />
-      <Cell value={sigLabel || null} className={sigClass} />
+      <VarisCell value={sigLabel || null} className={sigClass} varisNote={CLINICAL_SIG_NOTES[v.clinical_significance] ?? null} />
       <td
         className="px-3 py-1.5 text-brand-muted font-mono overflow-hidden"
         style={{ whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}
@@ -252,14 +294,14 @@ function VariantRow({ variant: v }: { variant: Variant }) {
           </a>
         ) : "—"}
       </td>
-      <Cell value={reviewLabel || null}      className="text-brand-muted" />
+      <VarisCell value={reviewLabel || null} className="text-brand-muted" varisNote={REVIEW_STATUS_NOTES[v.review_status] ?? null} />
       <Cell value={v.condition_name}         className="text-brand-muted" />
-      <Cell value={consequenceLabel || null} className="text-brand-muted" />
+      <VarisCell value={consequenceLabel || null} className="text-brand-muted" varisNote={CONSEQUENCE_NOTES[v.consequence] ?? null} />
       <Cell value={v.position.toLocaleString()} className="text-brand-text" mono />
       <Cell value={v.hgvs_c}     className="text-brand-muted text-[11px]" mono />
       <Cell value={v.hgvs_p}     className="text-brand-muted text-[11px]" mono />
       <Cell value={v.clinvar_last_evaluated || null} className="text-brand-muted" />
-      <Cell value={v.allele_frequency > 0 ? v.allele_frequency.toExponential(2) : null} className="text-right text-brand-muted" />
+      <VarisCell value={v.allele_frequency > 0 ? v.allele_frequency.toExponential(2) : null} className="text-right text-brand-muted" varisNote={afNote(v.allele_frequency)} />
     </tr>
   );
 }

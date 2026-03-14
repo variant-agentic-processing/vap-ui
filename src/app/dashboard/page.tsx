@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useClinvarVersion } from "@/hooks/useClinvarVersion";
 import { AgentPanel } from "@/components/AgentPanel";
+import { VarisPopover, type PopoverPos } from "@/components/VarisPopover";
+import { IndividualIdCell } from "@/components/IndividualIdCell";
+import { GENE_NOTES } from "@/lib/variantNotes";
 
 const WARMUP_ENDPOINTS = [
   "/api/agent/health",
@@ -81,12 +84,7 @@ export default function DashboardPage() {
                   {individuals.map((ind) => (
                     <tr key={ind.individual_id} className="transition-colors hover:bg-brand-border/20">
                       <td className="py-2 font-mono">
-                        <Link
-                          href={`/individuals/${encodeURIComponent(ind.individual_id)}`}
-                          className="text-brand-cyan hover:underline"
-                        >
-                          {ind.individual_id}
-                        </Link>
+                        <IndividualIdCell id={ind.individual_id} />
                       </td>
                       <td className="py-2 text-right text-brand-muted">{ind.variant_count.toLocaleString()}</td>
                       <td className="py-2 text-center text-brand-gold">{ind.pathogenic_count.toLocaleString()}</td>
@@ -108,12 +106,7 @@ export default function DashboardPage() {
                 const pct = max > 0 ? (g.pathogenic_count / max) * 100 : 0;
                 return (
                   <div key={g.gene_symbol} className="flex items-center gap-3">
-                    <Link
-                      href={`/genes/${encodeURIComponent(g.gene_symbol)}`}
-                      className="w-24 shrink-0 font-mono text-xs text-brand-cyan hover:underline truncate"
-                    >
-                      {g.gene_symbol}
-                    </Link>
+                    <GeneSymbolLink symbol={g.gene_symbol} />
                     <div className="flex-1 h-1.5 rounded-full bg-brand-border overflow-hidden">
                       <div className="h-full rounded-full bg-brand-gold" style={{ width: `${pct}%` }} />
                     </div>
@@ -147,9 +140,7 @@ export default function DashboardPage() {
                   {sharedPathogenicGenes.map((g) => (
                     <tr key={g.gene_symbol} className="hover:bg-brand-border/20 transition-colors">
                       <td className="py-2 font-mono">
-                        <Link href={`/genes/${encodeURIComponent(g.gene_symbol)}`} className="text-brand-cyan hover:underline">
-                          {g.gene_symbol}
-                        </Link>
+                        <GeneSymbolLink symbol={g.gene_symbol} />
                       </td>
                       <td className="py-2 text-right text-brand-gold">{g.individual_count}</td>
                       <td className="py-2 text-right text-brand-muted">{g.pathogenic_count.toLocaleString()}</td>
@@ -280,6 +271,62 @@ function ClinvarStatCard({ version }: { version: string | null }) {
         <p className="mt-1.5 text-xs text-red-400/80">Refresh recommended</p>
       )}
     </div>
+  );
+}
+
+function GeneSymbolLink({ symbol }: { symbol: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [pos, setPos] = useState<PopoverPos | null>(null);
+  const [note, setNote] = useState<string | null>(GENE_NOTES[symbol] ?? null);
+  const fetched = useRef(false);
+
+  useEffect(() => {
+    if (!pos) return;
+    function hide() { setPos(null); }
+    window.addEventListener("scroll", hide, { capture: true, passive: true });
+    return () => window.removeEventListener("scroll", hide, { capture: true });
+  }, [pos]);
+
+  function handleMouseEnter() {
+    if (!ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    setPos({ top: r.top + r.height / 2, left: r.right + 10 });
+    if (!fetched.current) {
+      fetched.current = true;
+      if (!note) {
+        fetch(`/api/gene-info/${encodeURIComponent(symbol)}`)
+          .then((r) => r.json())
+          .then((d: { summary: string | null }) => { if (d.summary) setNote(d.summary); })
+          .catch(() => {});
+      }
+    }
+  }
+
+  return (
+    <>
+      <span
+        ref={ref}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={() => setPos(null)}
+        className="inline-block w-24 shrink-0"
+      >
+        <Link
+          href={`/genes/${encodeURIComponent(symbol)}`}
+          className="font-mono text-xs text-brand-cyan hover:underline truncate block"
+        >
+          {symbol}
+        </Link>
+      </span>
+      {pos && (
+        <VarisPopover pos={pos} cardClassName="w-80" placement="right">
+          <p className="text-[11px] font-semibold text-brand-text mb-0.5">{symbol}</p>
+          {note
+            ? <p className="text-[11px] leading-relaxed text-brand-muted">{note}</p>
+            : <p className="text-[11px] text-brand-muted animate-pulse">Loading…</p>
+          }
+        </VarisPopover>
+      )}
+    </>
   );
 }
 

@@ -4,7 +4,17 @@ import { use } from "react";
 import Link from "next/link";
 import { useGeneVariants } from "@/hooks/useGeneVariants";
 import { AgentPanel } from "@/components/AgentPanel";
+import { ZygosityBadge } from "@/components/ZygosityBadge";
+import { VarisCell } from "@/components/VarisCell";
+import { IndividualIdCell } from "@/components/IndividualIdCell";
 import type { GeneVariant } from "@/lib/cohort-client";
+import {
+  CLINICAL_SIG_NOTES,
+  CONSEQUENCE_NOTES,
+  REVIEW_STATUS_NOTES,
+  chromNote,
+  afNote,
+} from "@/lib/variantNotes";
 
 const SIG_COLORS: Record<string, string> = {
   Pathogenic: "text-red-400",
@@ -75,13 +85,13 @@ export default function GenePage({ params }: { params: Promise<{ symbol: string 
 
       {data && data.variants.length > 0 && (
         <div className="overflow-auto rounded-xl border border-brand-border" style={{ maxHeight: "600px" }}>
-          <table className="border-collapse text-xs" style={{ tableLayout: "fixed", width: "1620px" }}>
+          <table className="border-collapse text-xs" style={{ tableLayout: "fixed", width: "1664px" }}>
             <colgroup>
               <col style={{ width: 110 }} />
-              <col style={{ width: 60 }} />
+              <col style={{ width: 80 }} />
               <col style={{ width: 52 }} />
               <col style={{ width: 52 }} />
-              <col style={{ width: 72 }} />
+              <col style={{ width: 96 }} />
               <col style={{ width: 160 }} />
               <col style={{ width: 90 }} />
               <col style={{ width: 100 }} />
@@ -161,18 +171,19 @@ function GeneVariantRow({ variant: v }: { variant: GeneVariant }) {
   return (
     <tr className="transition-colors even:bg-brand-border/10 hover:bg-brand-border/20">
       <td
-        className="px-3 py-1.5 font-mono overflow-hidden text-brand-cyan"
+        className="px-3 py-1.5 font-mono overflow-hidden"
         style={{ whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}
       >
-        <Link href={`/individuals/${encodeURIComponent(v.individual_id)}`} className="hover:underline">
-          {v.individual_id}
-        </Link>
+        <IndividualIdCell id={v.individual_id} />
       </td>
-      <Cell value={v.chromosome} className="text-brand-muted" mono />
+      <VarisCell value={v.chromosome} className="text-brand-muted" mono varisNote={chromNote(v.chromosome)} />
       <Cell value={v.ref}        className="text-brand-text" mono />
       <Cell value={v.alt}        className="text-brand-text" mono />
-      <Cell value={v.genotype}   className="text-brand-muted" mono />
-      <Cell value={sigLabel || null} className={sigClass} />
+      <td title={v.genotype || undefined} className="px-3 py-1.5 font-mono overflow-hidden" style={{ whiteSpace: "nowrap" }}>
+        <span className="text-brand-muted">{v.genotype || "—"}</span>
+        <ZygosityBadge genotype={v.genotype} />
+      </td>
+      <VarisCell value={sigLabel || null} className={sigClass} varisNote={CLINICAL_SIG_NOTES[v.clinical_significance] ?? null} />
       <td
         className="px-3 py-1.5 text-brand-muted font-mono overflow-hidden"
         style={{ whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}
@@ -203,13 +214,13 @@ function GeneVariantRow({ variant: v }: { variant: GeneVariant }) {
           </a>
         ) : "—"}
       </td>
-      <Cell value={reviewLabel || null}      className="text-brand-muted" />
+      <VarisCell value={reviewLabel || null} className="text-brand-muted" varisNote={REVIEW_STATUS_NOTES[v.review_status] ?? null} />
       <Cell value={v.condition_name}         className="text-brand-muted" />
-      <Cell value={consequenceLabel || null} className="text-brand-muted" />
+      <VarisCell value={consequenceLabel || null} className="text-brand-muted" varisNote={CONSEQUENCE_NOTES[v.consequence] ?? null} />
       <Cell value={v.position.toLocaleString()} className="text-brand-text" mono />
       <Cell value={v.hgvs_c} className="text-brand-muted text-[11px]" mono />
       <Cell value={v.hgvs_p} className="text-brand-muted text-[11px]" mono />
-      <Cell value={v.allele_frequency > 0 ? v.allele_frequency.toExponential(2) : null} className="text-right text-brand-muted" />
+      <VarisCell value={v.allele_frequency > 0 ? v.allele_frequency.toExponential(2) : null} className="text-right text-brand-muted" varisNote={afNote(v.allele_frequency)} />
     </tr>
   );
 }
