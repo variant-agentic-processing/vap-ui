@@ -5,8 +5,6 @@ import Link from "next/link";
 import { VarisPopover, type PopoverPos } from "./VarisPopover";
 import { getSample, type Sample } from "@/lib/sample-client";
 
-const CARD_HEIGHT = 84;
-
 export function IndividualIdCell({ id }: { id: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [pos, setPos] = useState<PopoverPos | null>(null);
@@ -23,7 +21,7 @@ export function IndividualIdCell({ id }: { id: string }) {
   function handleMouseEnter() {
     if (!ref.current) return;
     const r = ref.current.getBoundingClientRect();
-    setPos({ top: r.top - CARD_HEIGHT - 10, left: r.left + r.width / 2 });
+    setPos({ top: r.top + r.height / 2, left: r.right + 10 });
     if (!fetched.current) {
       fetched.current = true;
       getSample(id).then(setSample).catch(() => {});

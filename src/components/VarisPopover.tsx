@@ -15,7 +15,7 @@ interface VarisPopoverProps {
   children: React.ReactNode;
 }
 
-export function VarisPopover({ pos, cardClassName = "w-56", placement = "above", children }: VarisPopoverProps) {
+export function VarisPopover({ pos, cardClassName = "w-56", placement = "right", children }: VarisPopoverProps) {
   const wrapStyle =
     placement === "right"
       ? { top: pos.top, left: pos.left, transform: "translateY(-50%)" }

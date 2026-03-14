@@ -16,8 +16,6 @@ export function zygosity(genotype: string): "Het" | "Hom" | null {
   return a === b ? "Hom" : "Het";
 }
 
-const CARD_HEIGHT = 72;
-
 export function ZygosityBadge({ genotype }: { genotype: string }) {
   const z = zygosity(genotype);
   const ref = useRef<HTMLSpanElement>(null);
@@ -35,7 +33,7 @@ export function ZygosityBadge({ genotype }: { genotype: string }) {
   function handleMouseEnter() {
     if (!ref.current) return;
     const r = ref.current.getBoundingClientRect();
-    setPos({ top: r.top - CARD_HEIGHT - 10, left: r.left + r.width / 2 });
+    setPos({ top: r.top + r.height / 2, left: r.right + 10 });
   }
 
   const label = z === "Het" ? "Heterozygous" : "Homozygous";

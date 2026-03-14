@@ -8,8 +8,6 @@
 import { useRef, useState, useEffect } from "react";
 import { VarisPopover, type PopoverPos } from "./VarisPopover";
 
-const CARD_HEIGHT = 80;
-
 interface VarisCellProps {
   value: string | number | null | undefined;
   varisNote?: string | null;
@@ -37,7 +35,7 @@ export function VarisCell({
   function handleMouseEnter() {
     if (!varisNote || !ref.current) return;
     const r = ref.current.getBoundingClientRect();
-    setPos({ top: r.top - CARD_HEIGHT - 10, left: r.left + r.width / 2 });
+    setPos({ top: r.top + r.height / 2, left: r.right + 10 });
   }
 
   return (
