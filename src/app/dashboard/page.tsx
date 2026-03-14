@@ -140,9 +140,7 @@ export default function DashboardPage() {
                   {sharedPathogenicGenes.map((g) => (
                     <tr key={g.gene_symbol} className="hover:bg-brand-border/20 transition-colors">
                       <td className="py-2 font-mono">
-                        <Link href={`/genes/${encodeURIComponent(g.gene_symbol)}`} className="text-brand-cyan hover:underline">
-                          {g.gene_symbol}
-                        </Link>
+                        <GeneSymbolLink symbol={g.gene_symbol} />
                       </td>
                       <td className="py-2 text-right text-brand-gold">{g.individual_count}</td>
                       <td className="py-2 text-right text-brand-muted">{g.pathogenic_count.toLocaleString()}</td>
