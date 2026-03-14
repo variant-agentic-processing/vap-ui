@@ -85,10 +85,10 @@ export default function GenePage({ params }: { params: Promise<{ symbol: string 
 
       {data && data.variants.length > 0 && (
         <div className="overflow-auto rounded-xl border border-brand-border" style={{ maxHeight: "600px" }}>
-          <table className="border-collapse text-xs" style={{ tableLayout: "fixed", width: "1644px" }}>
+          <table className="border-collapse text-xs" style={{ tableLayout: "fixed", width: "1664px" }}>
             <colgroup>
               <col style={{ width: 110 }} />
-              <col style={{ width: 60 }} />
+              <col style={{ width: 80 }} />
               <col style={{ width: 52 }} />
               <col style={{ width: 52 }} />
               <col style={{ width: 96 }} />
