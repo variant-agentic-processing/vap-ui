@@ -214,7 +214,7 @@ function VariantRow({ variant: v }: { variant: Variant }) {
       <Cell value={v.chromosome}  className="text-brand-muted" mono />
       <Cell value={v.ref}         className="text-brand-text" mono />
       <Cell value={v.alt}         className="text-brand-text" mono />
-      <td className="px-3 py-1.5 font-mono overflow-hidden" style={{ whiteSpace: "nowrap" }}>
+      <td title={v.genotype || undefined} className="px-3 py-1.5 font-mono overflow-hidden" style={{ whiteSpace: "nowrap" }}>
         <span className="text-brand-muted">{v.genotype || "—"}</span>
         <ZygosityBadge genotype={v.genotype} />
       </td>

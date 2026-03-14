@@ -11,15 +11,21 @@ export function zygosity(genotype: string): "Het" | "Hom" | null {
   return a === b ? "Hom" : "Het";
 }
 
+const TOOLTIPS = {
+  Het: "Heterozygous — one reference allele and one alternate allele",
+  Hom: "Homozygous — two copies of the alternate allele",
+};
+
 export function ZygosityBadge({ genotype }: { genotype: string }) {
   const z = zygosity(genotype);
   if (!z) return null;
   return (
     <span
+      title={TOOLTIPS[z]}
       className={
         z === "Het"
-          ? "ml-1.5 rounded px-1 py-0.5 text-[10px] font-semibold leading-none bg-brand-cyan/15 text-brand-cyan"
-          : "ml-1.5 rounded px-1 py-0.5 text-[10px] font-semibold leading-none bg-brand-gold/15 text-brand-gold"
+          ? "ml-1.5 rounded px-1 py-0.5 text-[10px] font-semibold leading-none bg-brand-cyan/15 text-brand-cyan cursor-help"
+          : "ml-1.5 rounded px-1 py-0.5 text-[10px] font-semibold leading-none bg-brand-gold/15 text-brand-gold cursor-help"
       }
     >
       {z}
