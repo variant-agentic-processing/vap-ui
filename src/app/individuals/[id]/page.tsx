@@ -54,7 +54,6 @@ const COLUMNS: { label: string; width: number }[] = [
   { label: "Depth",        width: 58  },
   { label: "Quality",      width: 64  },
   { label: "GQ",           width: 52  },
-  { label: "Filter",       width: 64  },
   { label: "Gene",         width: 80  },
   { label: "Significance", width: 160 },
   { label: "ClinVar ID",   width: 90  },
@@ -229,7 +228,7 @@ function VariantRow({ variant: v }: { variant: Variant }) {
       <Cell value={v.depth}       className="text-right text-brand-muted" />
       <Cell value={v.quality != null ? v.quality.toFixed(0) : null} className="text-right text-brand-muted" />
       <Cell value={v.genotype_quality != null ? v.genotype_quality.toFixed(0) : null} className="text-right text-brand-muted" />
-      <Cell value={v.filter}      className="text-brand-muted" />
+
       <Cell value={v.gene_symbol} className="text-brand-text" mono />
       <VarisCell value={sigLabel || null} className={sigClass} varisNote={CLINICAL_SIG_NOTES[v.clinical_significance] ?? null} />
       <td
