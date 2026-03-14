@@ -24,11 +24,11 @@ export function ZygosityBadge({ genotype }: { genotype: string }) {
       title={TOOLTIPS[z]}
       className={
         z === "Het"
-          ? "ml-1.5 rounded px-1 py-0.5 text-[10px] font-semibold leading-none bg-brand-cyan/15 text-brand-cyan cursor-help"
-          : "ml-1.5 rounded px-1 py-0.5 text-[10px] font-semibold leading-none bg-brand-gold/15 text-brand-gold cursor-help"
+          ? "ml-1.5 rounded px-1 py-0.5 text-[10px] font-semibold leading-none bg-brand-cyan/15 text-brand-cyan"
+          : "ml-1.5 rounded px-1 py-0.5 text-[10px] font-semibold leading-none bg-brand-gold/15 text-brand-gold"
       }
     >
-      {z}
+      🧬 {z}
     </span>
   );
 }
