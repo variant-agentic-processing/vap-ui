@@ -7,6 +7,7 @@ import { useClinvarVersion } from "@/hooks/useClinvarVersion";
 import { AgentPanel } from "@/components/AgentPanel";
 import { VarisPopover, type PopoverPos } from "@/components/VarisPopover";
 import { getSample, type Sample } from "@/lib/sample-client";
+import { GENE_NOTES } from "@/lib/variantNotes";
 
 const WARMUP_ENDPOINTS = [
   "/api/agent/health",
@@ -105,12 +106,7 @@ export default function DashboardPage() {
                 const pct = max > 0 ? (g.pathogenic_count / max) * 100 : 0;
                 return (
                   <div key={g.gene_symbol} className="flex items-center gap-3">
-                    <Link
-                      href={`/genes/${encodeURIComponent(g.gene_symbol)}`}
-                      className="w-24 shrink-0 font-mono text-xs text-brand-cyan hover:underline truncate"
-                    >
-                      {g.gene_symbol}
-                    </Link>
+                    <GeneSymbolLink symbol={g.gene_symbol} />
                     <div className="flex-1 h-1.5 rounded-full bg-brand-border overflow-hidden">
                       <div className="h-full rounded-full bg-brand-gold" style={{ width: `${pct}%` }} />
                     </div>
@@ -280,7 +276,51 @@ function ClinvarStatCard({ version }: { version: string | null }) {
   );
 }
 
+const GENE_CARD_HEIGHT = 84;
 const SAMPLE_CARD_HEIGHT = 84;
+
+function GeneSymbolLink({ symbol }: { symbol: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [pos, setPos] = useState<PopoverPos | null>(null);
+  const note = GENE_NOTES[symbol] ?? null;
+
+  useEffect(() => {
+    if (!pos) return;
+    function hide() { setPos(null); }
+    window.addEventListener("scroll", hide, { capture: true, passive: true });
+    return () => window.removeEventListener("scroll", hide, { capture: true });
+  }, [pos]);
+
+  function handleMouseEnter() {
+    if (!note || !ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    setPos({ top: r.top - GENE_CARD_HEIGHT - 10, left: r.left + r.width / 2 });
+  }
+
+  return (
+    <>
+      <span
+        ref={ref}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={() => setPos(null)}
+        className="inline-block w-24 shrink-0"
+      >
+        <Link
+          href={`/genes/${encodeURIComponent(symbol)}`}
+          className="font-mono text-xs text-brand-cyan hover:underline truncate block"
+        >
+          {symbol}
+        </Link>
+      </span>
+      {pos && note && (
+        <VarisPopover pos={pos} cardClassName="w-80">
+          <p className="text-[11px] font-semibold text-brand-text mb-0.5">{symbol}</p>
+          <p className="text-[11px] leading-relaxed text-brand-muted">{note}</p>
+        </VarisPopover>
+      )}
+    </>
+  );
+}
 
 function IndividualIdCell({ id }: { id: string }) {
   const ref = useRef<HTMLSpanElement>(null);

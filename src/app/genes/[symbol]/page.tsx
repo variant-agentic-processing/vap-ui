@@ -5,7 +5,15 @@ import Link from "next/link";
 import { useGeneVariants } from "@/hooks/useGeneVariants";
 import { AgentPanel } from "@/components/AgentPanel";
 import { ZygosityBadge } from "@/components/ZygosityBadge";
+import { VarisCell } from "@/components/VarisCell";
 import type { GeneVariant } from "@/lib/cohort-client";
+import {
+  CLINICAL_SIG_NOTES,
+  CONSEQUENCE_NOTES,
+  REVIEW_STATUS_NOTES,
+  chromNote,
+  afNote,
+} from "@/lib/variantNotes";
 
 const SIG_COLORS: Record<string, string> = {
   Pathogenic: "text-red-400",
@@ -169,14 +177,14 @@ function GeneVariantRow({ variant: v }: { variant: GeneVariant }) {
           {v.individual_id}
         </Link>
       </td>
-      <Cell value={v.chromosome} className="text-brand-muted" mono />
+      <VarisCell value={v.chromosome} className="text-brand-muted" mono varisNote={chromNote(v.chromosome)} />
       <Cell value={v.ref}        className="text-brand-text" mono />
       <Cell value={v.alt}        className="text-brand-text" mono />
       <td title={v.genotype || undefined} className="px-3 py-1.5 font-mono overflow-hidden" style={{ whiteSpace: "nowrap" }}>
         <span className="text-brand-muted">{v.genotype || "—"}</span>
         <ZygosityBadge genotype={v.genotype} />
       </td>
-      <Cell value={sigLabel || null} className={sigClass} />
+      <VarisCell value={sigLabel || null} className={sigClass} varisNote={CLINICAL_SIG_NOTES[v.clinical_significance] ?? null} />
       <td
         className="px-3 py-1.5 text-brand-muted font-mono overflow-hidden"
         style={{ whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}
@@ -207,13 +215,13 @@ function GeneVariantRow({ variant: v }: { variant: GeneVariant }) {
           </a>
         ) : "—"}
       </td>
-      <Cell value={reviewLabel || null}      className="text-brand-muted" />
+      <VarisCell value={reviewLabel || null} className="text-brand-muted" varisNote={REVIEW_STATUS_NOTES[v.review_status] ?? null} />
       <Cell value={v.condition_name}         className="text-brand-muted" />
-      <Cell value={consequenceLabel || null} className="text-brand-muted" />
+      <VarisCell value={consequenceLabel || null} className="text-brand-muted" varisNote={CONSEQUENCE_NOTES[v.consequence] ?? null} />
       <Cell value={v.position.toLocaleString()} className="text-brand-text" mono />
       <Cell value={v.hgvs_c} className="text-brand-muted text-[11px]" mono />
       <Cell value={v.hgvs_p} className="text-brand-muted text-[11px]" mono />
-      <Cell value={v.allele_frequency > 0 ? v.allele_frequency.toExponential(2) : null} className="text-right text-brand-muted" />
+      <VarisCell value={v.allele_frequency > 0 ? v.allele_frequency.toExponential(2) : null} className="text-right text-brand-muted" varisNote={afNote(v.allele_frequency)} />
     </tr>
   );
 }
